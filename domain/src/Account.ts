@@ -1,4 +1,4 @@
-import * as uuid from "uuid"
+import * as jj from "../../core/src/test"
 
 interface AccountState {
     state: string;
