@@ -1,5 +1,10 @@
 import * as uuid from "uuid"
 
-export class Account {
-    constructor(id: uuid)
+interface AccountState {
+    state: string;
+    id: string;
+}
+
+export class Account implements AccountState {
+    constructor(public state: string, public id: string) {}
 }
