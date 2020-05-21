@@ -1,6 +1,13 @@
 import * as express from "express";
-import * as Ac from "../../domain/src"
+import { AnyAccountEvent, created as accountCreated} from "../../domain/src/account";
 
+const ev = accountCreated("someid", "bla")
+
+function bla(ev: AnyAccountEvent) {
+    if (ev.name === "account.created") {
+        ev.payload.name
+    }
+}
 
 const app = express();
 const port = 3000;
