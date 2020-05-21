@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "declaration": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "preserveConstEnums": true,
+        "removeComments": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2020"
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"],
+    "references": [
+        { "path": "../core" },
+        { "path": "../domain" }
+    ]
+}
