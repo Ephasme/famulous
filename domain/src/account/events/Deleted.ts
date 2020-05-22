@@ -16,7 +16,7 @@ class DeletedImpl implements Deleted {
       DELETED,
       ACCOUNT,
       accountId,
-      new Date(),
+      Date.now(),
       payload
     );
   }
@@ -26,7 +26,7 @@ class DeletedImpl implements Deleted {
     readonly name: DELETED,
     readonly topic: ACCOUNT,
     readonly key: string,
-    readonly createdAt: Date,
+    readonly createdAt: number,
     readonly payload: DeletedPayload
   ) {}
 }

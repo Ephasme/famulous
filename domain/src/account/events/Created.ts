@@ -15,7 +15,7 @@ class CreatedImpl implements Created {
       CREATED,
       ACCOUNT,
       accountId,
-      new Date(),
+      Date.now(),
       { name: accountName }
     );
   }
@@ -25,7 +25,7 @@ class CreatedImpl implements Created {
     readonly name: CREATED,
     readonly topic: ACCOUNT,
     readonly key: string,
-    readonly createdAt: Date,
+    readonly createdAt: number,
     readonly payload: CreatedPayload
   ) {}
 }
