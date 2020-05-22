@@ -4,20 +4,20 @@ import { AccountEvent, ACCOUNT } from "..";
 export const DELETED = "account.deleted";
 export type DELETED = typeof DELETED;
 
-export type DeletedPayload = { accountId: string }
+export type DeletedPayload = {}
 
 export interface Deleted extends AccountEvent<DELETED, DeletedPayload> {}
 
 
 class DeletedImpl implements Deleted {
-  static make(accountId: string, payload: DeletedPayload): Deleted {
+  static make(accountId: string): Deleted {
     return new DeletedImpl(
       uuid.v4(),
       DELETED,
       ACCOUNT,
       accountId,
       Date.now(),
-      payload
+      {}
     );
   }
 
@@ -31,4 +31,4 @@ class DeletedImpl implements Deleted {
   ) {}
 }
 
-export const remove = DeletedImpl.make;
+export const deleted = DeletedImpl.make;
