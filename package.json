@@ -5,6 +5,7 @@
   "author": "Famulous",
   "license": "MIT",
   "scripts": {
+    "postinstall": "cd client && yarn",
     "build": "tsc -b ./server/app/tsconfig.json",
     "start:dev": "nodemon ./server/app/index.ts",
     "lint": "eslint . --ext .ts --fix",
