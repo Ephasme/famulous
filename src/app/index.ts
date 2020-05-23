@@ -1,5 +1,5 @@
 import * as express from "express";
-import * as Domain from "../../domain/src"
+import * as Domain from "../domain"
 
 const app = express();
 const port = 3000;

@@ -3,7 +3,7 @@ import {
   accountCreated,
   OPENED_ACCOUNT,
   accountDeleted,
-} from "../..";
+} from "../../../src/domain";
 
 describe("EmptyAccount", () => {
   it("should be in opened state when given a Created event", () => {
