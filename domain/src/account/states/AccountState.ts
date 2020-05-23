@@ -1,6 +1,10 @@
-import { OpenedAccount, OpenedAccountType } from "./OpenedAccount";
-import { EmptyAccount, EmptyAccountType } from "./EmptyAccount";
-import { AnyAccountEvent } from "../events/AccountEvent";
+import {
+  OpenedAccount,
+  EmptyAccount,
+  OpenedAccountType,
+  EmptyAccountType,
+  AnyAccountEvent,
+} from "../..";
 
 export type AnyAccountState = OpenedAccount | EmptyAccount;
 export type AnyAccountStateType = OpenedAccountType | EmptyAccountType;

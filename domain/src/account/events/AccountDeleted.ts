@@ -1,7 +1,5 @@
-import * as uuid from "uuid";
-import { AggregateInfo } from "../../AggregateEvent";
-import { AccountEvent } from "./AccountEvent";
-import { ACCOUNT, AccountType } from "../states/AccountState";
+import * as uuid from "uuid"
+import { AccountEvent, ACCOUNT, AggregateInfo, AccountType } from "../..";
 
 export const ACCOUNT_DELETED = "account.deleted";
 export type AccountDeletedType = typeof ACCOUNT_DELETED;
