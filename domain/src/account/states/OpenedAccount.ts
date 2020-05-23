@@ -1,10 +1,8 @@
-import {
-  AnyAccountEvent,
-  AnyAccountState,
-  ACCOUNT_CREATED,
-  ACCOUNT_DELETED,
-} from "..";
 import { EmptyAccount } from "./EmptyAccount";
+import { AnyAccountEvent } from "../events/AccountEvent";
+import { AnyAccountState } from "./AccountState";
+import { ACCOUNT_CREATED } from "../events/AccountCreated";
+import { ACCOUNT_DELETED } from "../events/AccountDeleted";
 
 export const OPENED_ACCOUNT = "opened-account";
 export type OpenedAccountType = typeof OPENED_ACCOUNT;

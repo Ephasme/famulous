@@ -1,6 +1,7 @@
 import { EmptyAccount } from "./EmptyAccount";
-import { accountCreated, accountDeleted } from "..";
 import { OPENED_ACCOUNT } from "./OpenedAccount";
+import { accountCreated } from "../events/AccountCreated";
+import { accountDeleted } from "../events/AccountDeleted";
 
 describe("EmptyAccount", () => {
   it("should be in opened state when given a Created event", () => {

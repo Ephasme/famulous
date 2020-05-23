@@ -1,14 +1,7 @@
-import {
-  AccountCreatedType,
-  AccountDeletedType,
-  AccountCreated,
-  AccountDeleted,
-} from "..";
 import { AggregateEvent } from "../../AggregateEvent";
-import { AccountType } from "../states";
-
-export * from "./AccountCreated";
-export * from "./AccountDeleted";
+import { AccountCreatedType, AccountCreated } from "./AccountCreated";
+import { AccountDeletedType, AccountDeleted } from "./AccountDeleted";
+import { AccountType } from "../states/AccountState";
 
 export interface AccountEvent<EventType extends AnyAccountEventType>
   extends AggregateEvent<EventType, AccountType> {}
