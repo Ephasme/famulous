@@ -1,18 +1,15 @@
 {
     "compilerOptions": {
-        "declaration": false,
+        "declaration": true,
+        "declarationMap": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
-        "module": "commonjs",
         "moduleResolution": "node",
-        "outDir": "./dist",
         "preserveConstEnums": true,
         "removeComments": true,
         "sourceMap": true,
         "strict": true,
         "target": "es2020"
-    },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules"],
+    }
 }
