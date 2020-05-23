@@ -5,8 +5,8 @@
   "author": "Famulous",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -b ./src/app/tsconfig.json",
-    "start:dev": "nodemon ./src/app/index.ts",
+    "build": "tsc -b ./server/app/tsconfig.json",
+    "start:dev": "nodemon ./server/app/index.ts",
     "lint": "eslint . --ext .ts --fix",
     "test": "jest"
   },

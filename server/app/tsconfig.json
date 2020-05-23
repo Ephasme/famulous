@@ -1,7 +1,7 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/app",
+    "outDir": "../../dist/server/app",
     "rootDir": ".",
     "composite": true
   },
