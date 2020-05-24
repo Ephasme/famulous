@@ -1,15 +1,16 @@
 {
-    "compilerOptions": {
-        "declaration": true,
-        "declarationMap": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "preserveConstEnums": true,
-        "removeComments": true,
-        "sourceMap": true,
-        "strict": true,
-        "target": "es2020"
-    }
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "preserveConstEnums": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2020"
+  }
 }

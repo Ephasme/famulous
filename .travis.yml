@@ -7,4 +7,4 @@ cache:
     - client/node_modules
     - server/node_modules
 script:
-  - ./scripts/run-ci-tests.sh
+  - ./scripts/build.sh
