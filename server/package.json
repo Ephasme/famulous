@@ -4,6 +4,10 @@
   "main": "index.ts",
   "author": "Famulous",
   "license": "MIT",
+  "engineStrict": true,
+  "engines": {
+    "node": "=12.16.3"
+  },
   "scripts": {
     "build": "tsc -b ./src/app/tsconfig.json",
     "start": "nodemon ./src/app/index.ts",

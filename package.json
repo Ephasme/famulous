@@ -1,7 +1,11 @@
 {
   "name": "famulous-app",
   "version": "v1.0.0",
-  "licence": "MIT",
+  "license": "MIT",
+  "engineStrict": true,
+  "engines": {
+    "node": "=12.16.3"
+  },
   "scripts": {
     "postinstall": "./scripts/postinstall.sh",
     "start": "pm2 start pm2.config.js",
