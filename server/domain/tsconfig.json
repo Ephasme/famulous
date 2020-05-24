@@ -1,9 +1,0 @@
-{
-    "extends": "../tsconfig.base.json",
-    "compilerOptions": {
-        "outDir": "../../dist/server/domain",
-        "rootDir": ".",
-        "composite": true
-    },
-    "include": ["**/*.ts", "../domain.test/EmptyAccount.spec.ts", "../domain.test/OpenedAccount.spec.ts"]
-}

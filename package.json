@@ -1,0 +1,13 @@
+{
+  "name": "famulous-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "pm2": "^4.4.0"
+  },
+  "scripts": {
+    "postinstall": "./scripts/postinstall.sh",
+    "build": "cd server && yarn build",
+    "start": "pm2 start ecosystem.config.js",
+    "stop": "pm2 delete ecosystem.config.js"
+  }
+}

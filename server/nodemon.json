@@ -4,6 +4,7 @@
         ".git",
         "node_modules/**/node_modules",
         "dist",
+        "logs",
         "docker"
     ],
     "verbose": true,
