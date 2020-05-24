@@ -4,8 +4,6 @@
   "licence": "MIT",
   "scripts": {
     "postinstall": "./scripts/postinstall.sh",
-    "start:client": "(cd client && yarn start)",
-    "start:server": "(cd server && yarn start)",
     "start": "pm2 start pm2.config.js",
     "stop": "pm2 delete pm2.config.js",
     "monit": "pm2 monit"

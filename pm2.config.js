@@ -2,11 +2,11 @@ module.exports = {
   apps: [
     {
       name: "server",
-      script: "yarn start:server",
+      script: 'yarn --cwd "./server" start',
     },
     {
       name: "client",
-      script: "yarn start:client",
+      script: 'yarn --cwd "./client" start',
     },
   ],
 };
