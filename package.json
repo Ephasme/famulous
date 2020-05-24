@@ -2,12 +2,12 @@
   "name": "famulous-app",
   "version": "v1.0.0",
   "license": "MIT",
+  "main": "dist/app/index.js",
   "engineStrict": true,
   "engines": {
     "node": "=12.16.3"
   },
   "scripts": {
-    "postinstall": "./scripts/postinstall.sh",
     "build": "./scripts/build.sh",
     "start": "pm2 start pm2.config.js",
     "stop": "pm2 delete pm2.config.js",
