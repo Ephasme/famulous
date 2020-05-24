@@ -1,10 +1,10 @@
-import * as uuid from "uuid"
+import * as uuid from "uuid";
 import { AccountEvent, ACCOUNT, AggregateInfo, AccountType } from "../..";
 
 export const ACCOUNT_DELETED = "account.deleted";
 export type AccountDeletedType = typeof ACCOUNT_DELETED;
 
-export interface AccountDeleted extends AccountEvent<AccountDeletedType> {}
+export type AccountDeleted = AccountEvent<AccountDeletedType>;
 
 class AccountDeletedImpl implements AccountDeleted {
   static make(id: string): AccountDeleted {

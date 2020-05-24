@@ -1,1 +1,1 @@
-export const BLA = "kdjflskjjkkk"
+export const BLA = "kdjflskjjkkk";

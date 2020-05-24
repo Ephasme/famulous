@@ -4,11 +4,12 @@ import {
   AccountDeletedType,
   AccountCreated,
   AccountDeleted,
-  AggregateEvent
+  AggregateEvent,
 } from "../..";
 
-export interface AccountEvent<EventType extends AnyAccountEventType>
-  extends AggregateEvent<EventType, AccountType> {}
+export type AccountEvent<
+  EventType extends AnyAccountEventType
+> = AggregateEvent<EventType, AccountType>;
 
 export type AnyAccountEventType = AccountCreatedType | AccountDeletedType;
 export type AnyAccountEvent = AccountCreated | AccountDeleted;

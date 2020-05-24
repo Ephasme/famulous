@@ -19,5 +19,4 @@ export class EmptyAccount {
         throw new Error("Empty account.");
     }
   }
-  constructor() {}
 }
