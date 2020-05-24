@@ -6,8 +6,8 @@ export type AccountCreatedType = typeof ACCOUNT_CREATED;
 
 interface Payload {
   account: {
-    name: string
-  }
+    name: string;
+  };
 }
 
 export interface AccountCreated
