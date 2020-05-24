@@ -8,6 +8,7 @@
   },
   "scripts": {
     "postinstall": "./scripts/postinstall.sh",
+    "build": "./scripts/build.sh",
     "start": "pm2 start pm2.config.js",
     "stop": "pm2 delete pm2.config.js",
     "monit": "pm2 monit"
