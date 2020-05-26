@@ -1,13 +1,17 @@
 import * as express from "express";
+import * as fs from "fs"
+import * as path from "path"
 import * as Domain from "../domain";
 
 const app = express();
-const port = 3001;
-
-app.get("/", (req, res) => res.send("Hello !"));
+const port = parseInt(process.env.PORT || "3001");
 
 app.get("/api/give-me-something", (req, res) => {
   res.send({ value: "something" })
 });
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, '../../dist/client')))
+}
 
 app.listen(port, () => console.log(`App started on port ${port}`));

@@ -1,6 +1,6 @@
 DIR=$(dirname $0)
 ROOT=$DIR/..
-$DIR/build.sh && \
-npx pm2 start $ROOT/server/dist/app/index.js \
-    --name famulous \
-    --exp-backoff-restart-delay=100
+PORT=80
+$DIR/build.sh 
+cp -r $ROOT/client/build $ROOT/server/dist/client
+npx pm2 start $DIR/ecosystem.config.js
