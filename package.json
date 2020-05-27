@@ -9,7 +9,7 @@
     "node": "=12.16.3"
   },
   "scripts": {
-    "prebuild": "yarn --cwd client build",
+    "prebuild": "yarn --cwd client && yarn --cwd client build",
     "build": "tsc -b ./server/app/tsconfig.json",
     "start:dev": "nodemon ./server/app/index.ts",
     "start": "NODE_ENV=production node ./dist/app/index.js",
