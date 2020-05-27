@@ -8,11 +8,14 @@
     "node": "=12.16.3"
   },
   "scripts": {
-    "dev:start": "pm2 start pm2.config.js",
-    "dev:stop": "pm2 delete pm2.config.js",
-    "dev:monit": "pm2 monit",
+    "install:all": "yarn && yarn --cwd server && yarn --cwd client",
+    "start:dev": "yarn install:all && pm2 start pm2.config.js",
+    "stop:dev": "pm2 delete pm2.config.js",
+    "monit:dev": "pm2 monit",
+    "start": "yarn --cwd server start",
+    "clean": "./scripts/clean.sh",
     "test": "./scripts/test.sh",
-    "build": "./scripts/build.sh"
+    "build": "yarn clean && ./scripts/build.sh"
   },
   "dependencies": {
     "pm2": "^4.4.0"

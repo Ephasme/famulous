@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "tsc -b ./src/app/tsconfig.json",
-    "start": "nodemon ./src/app/index.ts",
-    "start:production": "NODE_ENV=production node ./dist/app/index.js",
+    "start:dev": "nodemon ./src/app/index.ts",
+    "start": "NODE_ENV=production node ./dist/app/index.js",
     "lint": "eslint . --ext .ts --fix",
     "test": "jest"
   },
