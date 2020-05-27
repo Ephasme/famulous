@@ -1,4 +1,5 @@
-DIR=$(dirname $0)
-$DIR/setup.sh
-(cd server && yarn build)
-(cd client && yarn build)
+#!/bin/bash
+(cd server && yarn && \
+    ls -al node_modules/.bin && \
+    yarn build)
+(cd client && yarn && yarn build)
