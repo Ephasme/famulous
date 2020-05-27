@@ -12,7 +12,7 @@ app.get("/api/give-me-something", (req, res) => {
 
 if (process.env.NODE_ENV === "production") {
   console.log('running in production mode')
-  app.use(express.static(path.join(__dirname, '../../../client/build')))
+  app.use(express.static(path.join(__dirname, '../../client/build')))
 }
 
 app.listen(port, () => console.log(`App started on port ${port}`));
