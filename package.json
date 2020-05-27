@@ -12,7 +12,6 @@
     "dev:stop": "pm2 delete pm2.config.js",
     "dev:monit": "pm2 monit",
     "test": "./scripts/test.sh",
-    "start": "./scripts/start.sh",
     "build": "./scripts/build.sh"
   },
   "dependencies": {

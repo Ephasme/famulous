@@ -1,3 +1,4 @@
+#!/bin/sh
 DIR=$(dirname $0)
 ROOT=$DIR/..
 $DIR/setup.sh

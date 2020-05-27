@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/logs
+**/build
+
+pm.config.js
+.travis.yml
+.nvmrc
+.git
+.gitignore
+**/*.log
