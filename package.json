@@ -13,7 +13,7 @@
     "clean": "./scripts/clean.sh",
     "lint": "eslint . --ext .ts --fix",
     "postinstall": "yarn --cwd client",
-    "prebuild": "yarn clean && yarn && yarn --cwd client build",
+    "prebuild": "yarn --cwd client build",
     "start:dev": "nodemon ./server/app/index.ts",
     "start": "NODE_ENV=production node ./dist/app/index.js",
     "test:dev": "./scripts/test.sh",
