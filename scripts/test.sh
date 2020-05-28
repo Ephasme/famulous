@@ -1,3 +1,8 @@
-#!/bin/sh
-(cd server && yarn && yarn lint && CI=true yarn test)
-(cd client && yarn &&              CI=true yarn test --passWithNoTests)
+#!/bin/bash
+if [ ! $CI ]; then
+    WATCH="--watch"
+fi
+
+concurrently -n server,client \
+    "jest $WATCH" \
+    "yarn --cwd client test"
