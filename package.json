@@ -20,7 +20,7 @@
     "test": "CI=true yarn test:dev",
     "local:setup": "docker-compose -f server/local/docker-compose.yml up -d",
     "local:teardown": "docker-compose -f server/local/docker-compose.yml down",
-    "database:init": "ts-node server/db/init.ts && knex migrate:latest"
+    "database:init": "ts-node server/db/databaseInitialization.ts && knex migrate:latest"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",

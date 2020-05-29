@@ -7,7 +7,9 @@ const {
 } = process.env;
 
 export const postgresHost = POSTGRES_HOST;
-export const postgresPort = POSTGRES_PORT && parseInt(POSTGRES_PORT, 10);
+export const postgresPort = POSTGRES_PORT
+  ? parseInt(POSTGRES_PORT, 10)
+  : undefined;
 export const postgresUser = POSTGRES_USER;
 export const postgresPassword = POSTGRES_PASSWORD;
 export const postgresDatabase = POSTGRES_DATABASE || "famulous";

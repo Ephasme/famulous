@@ -1,6 +1,11 @@
 import * as express from "express";
 import * as path from "path";
+
 import userRoutes from "./users/routes";
+import { buildKnexClient } from "../helpers/db/clientInitialization";
+import { postgresDatabase } from "../helpers/env";
+
+const knexClient = buildKnexClient(postgresDatabase);
 
 const app = express();
 const port = parseInt(process.env.PORT || "3001");
@@ -14,6 +19,6 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../../client/build")));
 }
 
-app.use("/users", userRoutes);
+app.use("/users", userRoutes(knexClient));
 
 app.listen(port, () => console.log(`App started on port ${port}`));
