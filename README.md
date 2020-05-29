@@ -54,3 +54,11 @@ yarn
 - **Port** `5432`
 - **Username** `admin`
 - **Password** `example`
+
+### Maintenance
+
+- Add database migration:
+
+  ```sh
+  yarn run knex migrate:make {{MIGRATION_NAME}} -x ts
+  ```
