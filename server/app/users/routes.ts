@@ -6,8 +6,8 @@ export default (knex: Knex): Router => {
   const router = Router();
   const model = buildModel(knex);
 
-  router.post("/", (req, res) => {
-    const newUser = model.createUser({
+  router.post("/", async (req, res) => {
+    const newUser = await model.createUser({
       id: 1,
       email: "david.clochard77@gmail.com",
       name: "Clochard",
