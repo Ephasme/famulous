@@ -1,15 +1,20 @@
 import { Router } from "express";
+import * as Knex from "knex";
+import { buildModel } from "./model";
 
-const router = Router();
+export default (knex: Knex): Router => {
+  const router = Router();
+  const model = buildModel(knex);
 
-router.post("/", (req, res) => {
-  const newUser = {
-    id: 1,
-    email: "david.clochard77@gmail.com",
-    name: "Clochard",
-    firstname: "David",
-  };
-  res.send(newUser);
-});
+  router.post("/", (req, res) => {
+    const newUser = model.createUser({
+      id: 1,
+      email: "david.clochard77@gmail.com",
+      name: "Clochard",
+      firstname: "David",
+    });
+    res.send(newUser);
+  });
 
-export default router;
+  return router;
+};
