@@ -9,11 +9,11 @@ module.exports = {
       password: "example",
     },
     migrations: {
-      directory: "./db/migrations",
+      directory: "./server/db/migrations",
       tableName: "knex_migrations",
     },
     seeds: {
-      directory: "./db/seeds",
+      directory: "./server/db/seeds",
     },
   },
 };
