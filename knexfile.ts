@@ -1,12 +1,22 @@
+require("dotenv").config();
+
+import {
+  postgresHost,
+  postgresPort,
+  postgresUser,
+  postgresPassword,
+  postgresDatabase,
+} from "./server/helpers/env";
+
 module.exports = {
   development: {
     client: "postgresql",
     connection: {
-      port: 5432,
-      host: "localhost",
-      database: "famulous",
-      user: "admin",
-      password: "example",
+      port: postgresPort,
+      host: postgresHost,
+      database: postgresDatabase,
+      user: postgresUser,
+      password: postgresPassword,
     },
     migrations: {
       directory: "./server/db/migrations",

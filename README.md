@@ -10,32 +10,37 @@ Famulous is an application that helps you manage your personnal fincance. It is 
 
 ## Installation
 
-Run `yarn` into each following folders : `core`, `domain`, `infra`
+```
+yarn
+```
 
 ## Setup locally
 
 - Start local stack:
 
   ```sh
-  cd infra
   yarn run local:setup
   ```
 
 - Stop local stack :
 
   ```sh
-  cd infra
   yarn run local:teardown
   ```
 
 - Database initialization :
 
   ```sh
-  cd infra
   yarn run database:init
   ```
 
-### PgAdmin
+- Database update :
+
+  ```sh
+  yarn run knex migrate:latest
+  ```
+
+### PgAdmin (with default environment variables)
 
 #### Access to PgAdmin:
 
