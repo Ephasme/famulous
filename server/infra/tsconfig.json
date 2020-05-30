@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/helpers",
+    "outDir": "../../dist/infra",
     "rootDir": ".",
     "composite": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "../../knexfile.ts"]
 }

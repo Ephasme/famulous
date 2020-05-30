@@ -11,16 +11,15 @@
   "scripts": {
     "build": "tsc -b ./server/app/tsconfig.json",
     "clean": "./scripts/clean.sh",
+    "dev:setup": "docker-compose -f ./server/infra/local/docker-compose.yml up -d",
+    "dev:start": "yarn dev:setup && nodemon ./server/app/index.ts",
+    "dev:teardown": "docker-compose -f ./server/infra/local/docker-compose.yml down",
+    "dev:test": "./scripts/test.sh",
     "lint": "eslint . --ext .ts --fix",
     "postinstall": "yarn --cwd client",
     "prebuild": "yarn --cwd client build",
-    "start:dev": "nodemon ./server/app/index.ts",
     "start": "NODE_ENV=production node ./dist/app/index.js",
-    "test:dev": "./scripts/test.sh",
-    "test": "CI=true yarn test:dev",
-    "local:setup": "docker-compose -f server/local/docker-compose.yml up -d",
-    "local:teardown": "docker-compose -f server/local/docker-compose.yml down",
-    "database:init": "ts-node server/db/databaseInitialization.ts && knex migrate:latest"
+    "test": "CI=true yarn test:dev"
   },
   "devDependencies": {
     "@types/express": "^4.17.6",
