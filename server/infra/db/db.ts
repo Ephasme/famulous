@@ -1,13 +1,13 @@
 import * as Knex from "knex";
 
-const { POSTGRES_URL } = process.env
-if (!POSTGRES_URL) {
-  throw new Error("Missing environment variable: POSTGRES_URL");
+const { DATABASE_URL } = process.env
+if (!DATABASE_URL) {
+  throw new Error("Missing environment variable: DATABASE_URL");
 }
 
 const knex = Knex({
   client: "postgres",
-  connection: POSTGRES_URL,
+  connection: DATABASE_URL,
   migrations: {
     database: "knex_migrations",
     directory: "./server/infra/db/migrations"
