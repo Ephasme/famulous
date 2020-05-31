@@ -15,7 +15,7 @@
     "dev:start": "yarn dev:setup && nodemon ./server/app/index.ts",
     "dev:teardown": "docker-compose -f ./server/infra/local/docker-compose.yml down",
     "dev:test": "./scripts/test.sh",
-    "migrate": "npx knex migrate:latest",
+    "migrate": "knex migrate:latest",
     "lint": "eslint . --ext .ts --fix",
     "postinstall": "yarn --cwd client",
     "prebuild": "yarn --cwd client build",
@@ -31,7 +31,6 @@
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "concurrently": "^5.2.0",
-    "dotenv": "^8.2.0",
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
@@ -41,10 +40,11 @@
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "ts-jest": "^24.0.0",
-    "ts-node": "^8.10.1",
-    "typescript": "^3.9.3"
+    "ts-node": "^8.10.1"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
+    "typescript": "^3.9.3",
     "express": "^4.17.1",
     "knex": "^0.21.1",
     "pg": "^8.2.1",
