@@ -5,5 +5,5 @@
     "rootDir": ".",
     "composite": true
   },
-  "include": ["**/*.ts", "../../knexfile.ts"]
+  "include": ["**/*.ts"]
 }
