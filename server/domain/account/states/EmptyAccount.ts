@@ -14,7 +14,7 @@ export class EmptyAccount {
   handleEvent(ev: AnyAccountEvent): AnyAccountState {
     switch (ev.type) {
       case ACCOUNT_CREATED:
-        return new OpenedAccount(ev.aggregate.id, ev.account.name);
+        return new OpenedAccount(ev.aggregate.id, ev.payload.name);
       case ACCOUNT_DELETED:
         throw new Error("Empty account.");
     }

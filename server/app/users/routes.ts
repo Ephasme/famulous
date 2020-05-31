@@ -1,19 +1,17 @@
 import { Router } from "express";
-import * as Knex from "knex";
-import { buildModel } from "./model";
+import { Repository, USER, EMPTY_USER, userCreated } from "../../domain";
 
-export default (knex: Knex): Router => {
+export default (repository: Repository): Router => {
   const router = Router();
-  const model = buildModel(knex);
 
   router.post("/", async (req, res) => {
-    const newUser = await model.createUser({
-      id: 1,
-      email: "david.clochard77@gmail.com",
-      name: "Clochard",
-      firstname: "David",
-    });
-    res.send(newUser);
+    const state = await repository.fetchOne(USER);
+    if (state.type !== EMPTY_USER) throw new Error("");
+
+    const ev = userCreated(req.body.id, req.body.email, req.body.password);
+    const newState = state.handleEvent(ev);
+    repository.save(ev);
+    repository.save(newState);
   });
 
   return router;

@@ -1,7 +1,23 @@
+// Lib
+export * from "./WithT"
+export * from "./Repository"
+
 // Root exports
 export * from "./AnyEvent";
 export * from "./AnyState";
+export * from "./AnyEntity";
+export * from "./AnyDomain";
 export * from "./AggregateEvent";
+
+// USER
+// Exporting events
+export * from "./user/events/UserCreated";
+export * from "./user/events/UserEvent";
+
+// Exporting states
+export * from "./user/states/UserState"
+export * from "./user/states/EmptyUser"
+export * from "./user/states/ActiveUser"
 
 // ACCOUNT
 // Exporting events
