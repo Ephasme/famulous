@@ -1,19 +1,32 @@
 import { Router } from "express";
-import * as Knex from "knex";
-import { buildModel } from "./model";
+import {
+  Repository,
+  USER,
+  userCreated,
+  isAnyUserState,
+  ACTIVE_USER,
+} from "../../domain";
 
-export default (knex: Knex): Router => {
+export default (repository: Repository): Router => {
   const router = Router();
-  const model = buildModel(knex);
 
   router.post("/", async (req, res) => {
-    const newUser = await model.createUser({
-      id: 1,
-      email: "david.clochard77@gmail.com",
-      name: "Clochard",
-      firstname: "David",
-    });
-    res.send(newUser);
+    const state = await repository.fetchOne(USER);
+    if (!isAnyUserState(state)) {
+      throw new Error("state is not user");
+    }
+
+    const event = userCreated(req.body.id, req.body.email, req.body.password);
+    const newState = state.handleEvent(event);
+
+    if (newState.type !== ACTIVE_USER) {
+      throw new Error("user not created");
+    }
+
+    await repository.save(event);
+    await repository.save(newState);
+
+    res.json({ id: newState.id, email: newState.email });
   });
 
   return router;
