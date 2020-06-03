@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import {
   Repository,
   USER,
@@ -6,11 +7,13 @@ import {
   isAnyUserState,
   ACTIVE_USER,
 } from "../../domain";
+import validator from "../middlewares/validator";
+import { createUserSchema } from "./validators";
 
 export default (repository: Repository): Router => {
   const router = Router();
 
-  router.post("/", async (req, res) => {
+  router.post("/", validator(createUserSchema), async (req, res) => {
     const state = await repository.fetchOne(USER);
     if (!isAnyUserState(state)) {
       throw new Error("state is not user");
