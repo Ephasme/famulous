@@ -16,28 +16,34 @@ yarn
 
 ## Setup locally
 
+- Start application locally (implicitly start local stack) :
+
+  ```sh
+  yarn dev:start
+  ```
+
 - Start local stack:
 
   ```sh
-  yarn run local:setup
+  yarn dev:setup
   ```
 
 - Stop local stack :
 
   ```sh
-  yarn run local:teardown
+  yarn dev:teardown
   ```
 
 - Database initialization :
 
   ```sh
-  yarn run database:init
+  yarn database:init
   ```
 
 - Database update :
 
   ```sh
-  yarn run knex migrate:latest
+  yarn migrate
   ```
 
 ### PgAdmin (with default environment variables)
@@ -45,7 +51,7 @@ yarn
 #### Access to PgAdmin:
 
 - **URL:** `http://localhost:5050`
-- **Username:** pgadmin4@pgadmin.org
+- **Username:** admin@famulous.app
 - **Password:** admin
 
 #### Add a new server in PgAdmin:
@@ -60,5 +66,5 @@ yarn
 - Add database migration:
 
   ```sh
-  yarn run knex migrate:make {{MIGRATION_NAME}} -x ts
+  yarn knex migrate:make {{MIGRATION_NAME}} -x ts
   ```
