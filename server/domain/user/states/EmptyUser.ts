@@ -12,6 +12,7 @@ export class EmptyUser {
           ev.aggregate.id,
           ev.payload.email,
           ev.payload.password,
+          ev.payload.salt
         );
     }
   }

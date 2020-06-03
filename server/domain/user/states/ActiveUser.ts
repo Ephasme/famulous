@@ -1,4 +1,4 @@
-import { AnyUserEvent, AnyUserState, ACCOUNT_CREATED } from "../..";
+import { AnyUserEvent, AnyUserState } from "../..";
 import { USER_CREATED } from "../events/UserCreated";
 
 export const ACTIVE_USER = "active-user";
@@ -16,5 +16,6 @@ export class ActiveUser {
     readonly id: string,
     readonly email: string,
     readonly password: string,
+    readonly salt: string
   ) {}
 }

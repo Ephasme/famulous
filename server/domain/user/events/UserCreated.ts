@@ -7,6 +7,7 @@ export type UserCreatedType = typeof USER_CREATED;
 interface Payload {
   email: string;
   password: string;
+  salt: string;
 }
 
 export interface UserCreated
@@ -18,13 +19,14 @@ class UserCreatedImpl implements UserCreated {
     id: string,
     email: string,
     password: string,
+    salt: string
   ): UserCreated {
     return new UserCreatedImpl(
       uuid.v4(),
       USER_CREATED,
       { id, type: USER },
       Date.now(),
-      { email, password }
+      { email, password, salt }
     );
   }
 

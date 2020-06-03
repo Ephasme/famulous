@@ -9,6 +9,7 @@ import {
 } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
+import { hashPassword } from "./security";
 
 export default (repository: Repository): Router => {
   const router = Router();
@@ -19,7 +20,14 @@ export default (repository: Repository): Router => {
       throw new Error("state is not user");
     }
 
-    const event = userCreated(req.body.id, req.body.email, req.body.password);
+    const { hashedPassword, salt } = hashPassword(req.body.password);
+
+    const event = userCreated(
+      req.body.id,
+      req.body.email,
+      hashedPassword,
+      salt
+    );
     const newState = state.handleEvent(event);
 
     if (newState.type !== ACTIVE_USER) {
