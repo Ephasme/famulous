@@ -1,7 +1,8 @@
 import * as express from "express";
 import * as Joi from "@hapi/joi";
+import Logger from "../interfaces/Logger";
 
-const makeBodyValidatorMiddleware = (schema: Joi.AnySchema) => (
+const makeBodyValidatorMiddleware = (schema: Joi.AnySchema, logger: Logger) => (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -14,7 +15,7 @@ const makeBodyValidatorMiddleware = (schema: Joi.AnySchema) => (
     const { details } = error;
     const message = details.map((detail) => detail.message).join(",");
 
-    console.log(`Server received invalid body from client :${message}`);
+    logger.info(`Server received invalid body from client :${message}`);
     res.send(message).status(403);
   }
 };

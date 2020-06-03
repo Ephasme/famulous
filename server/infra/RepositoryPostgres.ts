@@ -13,6 +13,7 @@ import {
   USER_CREATED,
 } from "../domain";
 import Knex = require("knex");
+import Logger from "../app/interfaces/Logger";
 
 type UserModel = {
   id: string;
@@ -33,7 +34,7 @@ type UserCreatedModel = {
 };
 
 export class RepositoryPostgres implements Repository {
-  constructor(private knex: Knex) {}
+  constructor(private knex: Knex, private logger: Logger) {}
 
   async fetchOne(
     domainType: AnyDomainType,
@@ -47,7 +48,7 @@ export class RepositoryPostgres implements Repository {
         const [user] = await this.knex<UserModel>(USER).where({ id });
         switch (user.state) {
           case ACTIVE_USER:
-            console.log(`Fetched active user ${user.id}`);
+            this.logger.info(`Fetched active user ${user.id}`);
             return new ActiveUser(
               user.id,
               user.email,
@@ -62,7 +63,7 @@ export class RepositoryPostgres implements Repository {
     throw new Error("Object unkown");
   }
   async save(entity: AnyEntity): Promise<string> {
-    console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
+    this.logger.info(`trying to save ${JSON.stringify(entity, null, 4)}`);
     switch (entity.type) {
       case USER_CREATED:
         await this.knex<UserCreatedModel>("user_events").insert({
@@ -74,7 +75,7 @@ export class RepositoryPostgres implements Repository {
           created_password: entity.payload.password,
           created_salt: entity.payload.salt,
         });
-        console.log(`Saved event user_created ${entity.aggregate.id}`);
+        this.logger.info(`Saved event user_created ${entity.aggregate.id}`);
         return entity.id;
       case EMPTY_USER:
         throw new Error("Can't save empty user.");
@@ -86,7 +87,7 @@ export class RepositoryPostgres implements Repository {
           salt: entity.salt,
           state: entity.type,
         });
-        console.log(`Saved active user ${entity.id}`);
+        this.logger.info(`Saved active user ${entity.id}`);
         return entity.id;
     }
     throw new Error("Object unkown");

@@ -10,11 +10,12 @@ import {
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
 import { hashPassword } from "./security";
+import Logger from "../interfaces/Logger";
 
-export default (repository: Repository): Router => {
+export default (repository: Repository, logger: Logger): Router => {
   const router = Router();
 
-  router.post("/", validator(createUserSchema), async (req, res) => {
+  router.post("/", validator(createUserSchema, logger), async (req, res) => {
     const state = await repository.fetchOne(USER);
     if (!isAnyUserState(state)) {
       throw new Error("state is not user");
