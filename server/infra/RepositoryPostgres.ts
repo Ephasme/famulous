@@ -1,7 +1,9 @@
 import {
   Repository,
+  FindParameters,
   USER,
   ACCOUNT,
+  AnyUserState,
   AnyUserStateType,
   ACTIVE_USER,
   ActiveUser,
@@ -57,6 +59,18 @@ export class RepositoryPostgres implements Repository {
 
   saveAll: SaveAll;
 
+  private checkUserState = (user: UserModel): AnyState => {
+    switch (user.state) {
+      case ACTIVE_USER:
+        this.logger.info(`Fetched active user ${user.id}`);
+        return new ActiveUser(user.id, user.email, user.password, user.salt);
+      case EMPTY_USER:
+        throw new Error("User state is corrupted, should not be empty.");
+      default:
+        throw new Error("Object unkown");
+    }
+  };
+
   async fetchOne(
     domainType: AnyDomainType,
     id?: string | undefined
@@ -67,18 +81,20 @@ export class RepositoryPostgres implements Repository {
           return new EmptyUser();
         }
         const [user] = await this.knex<UserModel>(USER).where({ id });
-        switch (user.state) {
-          case ACTIVE_USER:
-            this.logger.info(`Fetched active user ${user.id}`);
-            return new ActiveUser(
-              user.id,
-              user.email,
-              user.password,
-              user.salt
-            );
-          case EMPTY_USER:
-            throw new Error("User state is corrupted, should not be empty.");
-        }
+        return this.checkUserState(user);
+      case ACCOUNT:
+    }
+    throw new Error("Object unkown");
+  }
+
+  async find(
+    domainType: AnyDomainType,
+    parameters: FindParameters
+  ): Promise<AnyState[]> {
+    switch (domainType) {
+      case USER:
+        const users = await this.knex<UserModel>(USER).where(parameters);
+        return users.map((user) => this.checkUserState(user));
       case ACCOUNT:
     }
     throw new Error("Object unkown");

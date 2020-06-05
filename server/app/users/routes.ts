@@ -9,7 +9,7 @@ import {
 } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
-import { hashPassword } from "./security";
+import { hashPassword } from "../security/password";
 import Logger from "../interfaces/Logger";
 
 export default (repository: Repository, logger: Logger): Router => {
