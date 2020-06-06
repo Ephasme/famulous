@@ -10,12 +10,12 @@ import {
   AnyEntity,
   EmptyUser,
   EMPTY_USER,
-  USER_CREATED,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
+import { saveAll } from "./repositories/saveEntity";
 
-type UserModel = {
+export type UserModel = {
   id: string;
   state: AnyUserStateType;
   email: string;
@@ -23,7 +23,7 @@ type UserModel = {
   salt: string;
 };
 
-type UserCreatedModel = {
+export type UserCreatedModel = {
   id: string;
   type: string;
   aggregate_id: string;
@@ -33,8 +33,24 @@ type UserCreatedModel = {
   created_salt?: string;
 };
 
+export type SaveAnyEntity = (entity: AnyEntity) => Promise<string>;
+export type SaveEntity<T extends AnyEntity> = (entity: T) => Promise<string>;
+export type SaveAnyEntityPostgres = (
+  knex: Knex,
+  logger: Logger
+) => (trx: Knex.Transaction) => SaveAnyEntity;
+export type SaveEntityPostgres<T extends AnyEntity> = (
+  knex: Knex<T>,
+  logger: Logger
+) => (trx: Knex.Transaction<T, string>) => SaveEntity<T>;
+
 export class RepositoryPostgres implements Repository {
   constructor(private knex: Knex, private logger: Logger) {}
+
+  saveAll: (...entities: AnyEntity[]) => Promise<string[]> = saveAll(
+    this.knex,
+    this.logger
+  );
 
   async fetchOne(
     domainType: AnyDomainType,
@@ -59,36 +75,6 @@ export class RepositoryPostgres implements Repository {
             throw new Error("User state is corrupted, should not be empty.");
         }
       case ACCOUNT:
-    }
-    throw new Error("Object unkown");
-  }
-  async save(entity: AnyEntity): Promise<string> {
-    this.logger.info(`trying to save ${JSON.stringify(entity, null, 4)}`);
-    switch (entity.type) {
-      case USER_CREATED:
-        await this.knex<UserCreatedModel>("user_events").insert({
-          id: entity.id,
-          type: entity.type,
-          aggregate_id: entity.aggregate.id,
-          aggregate_type: entity.aggregate.type,
-          created_email: entity.payload.email,
-          created_password: entity.payload.password,
-          created_salt: entity.payload.salt,
-        });
-        this.logger.info(`Saved event user_created ${entity.aggregate.id}`);
-        return entity.id;
-      case EMPTY_USER:
-        throw new Error("Can't save empty user.");
-      case ACTIVE_USER:
-        await this.knex<UserModel>(USER).insert({
-          email: entity.email,
-          id: entity.id,
-          password: entity.password,
-          salt: entity.salt,
-          state: entity.type,
-        });
-        this.logger.info(`Saved active user ${entity.id}`);
-        return entity.id;
     }
     throw new Error("Object unkown");
   }
