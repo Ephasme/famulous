@@ -12,7 +12,7 @@
     "build": "tsc -b ./server/app/tsconfig.json",
     "clean": "./scripts/clean.sh",
     "dev:setup": "docker-compose -f ./server/infra/local/docker-compose.yml up -d && yarn migrate",
-    "dev:start": "yarn dev:setup && nodemon ./server/app/index.ts",
+    "dev:start": "yarn dev:setup && DEBUG=knex:tx nodemon ./server/app/index.ts",
     "dev:teardown": "docker-compose -f ./server/infra/local/docker-compose.yml down",
     "dev:test": "./scripts/test.sh",
     "migrate": "knex migrate:latest",

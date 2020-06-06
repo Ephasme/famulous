@@ -33,21 +33,21 @@ export type UserCreatedModel = {
   created_salt?: string;
 };
 
-export type SaveAnyEntity = (entity: AnyEntity) => Promise<string>;
-export type SaveEntity<T extends AnyEntity> = (entity: T) => Promise<string>;
+export type SaveAnyEntity = (entity: AnyEntity) => Promise<void>;
+export type SaveEntity<T extends AnyEntity> = (entity: T) => Promise<void>;
 export type SaveAnyEntityPostgres = (
-  knex: Knex,
+  knex: Knex<AnyEntity>,
   logger: Logger
-) => (trx: Knex.Transaction) => SaveAnyEntity;
+) => SaveAnyEntity;
 export type SaveEntityPostgres<T extends AnyEntity> = (
-  knex: Knex<T>,
+  knex: Knex<AnyEntity>,
   logger: Logger
-) => (trx: Knex.Transaction<T, string>) => SaveEntity<T>;
+) => SaveEntity<T>;
 
 export class RepositoryPostgres implements Repository {
   constructor(private knex: Knex, private logger: Logger) {}
 
-  saveAll: (...entities: AnyEntity[]) => Promise<string[]> = saveAll(
+  saveAll: (...entities: AnyEntity[]) => Promise<void> = saveAll(
     this.knex,
     this.logger
   );
