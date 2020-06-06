@@ -1,4 +1,9 @@
-import { AnyAccountState, AnyAccountStateType } from ".";
+import {
+  AnyAccountState,
+  AnyAccountStateType,
+  AnyUserState,
+  AnyUserStateType,
+} from ".";
 
-export type AnyState = AnyAccountState;
-export type AnyStateType = AnyAccountStateType;
+export type AnyState = AnyAccountState | AnyUserState;
+export type AnyStateType = AnyAccountStateType | AnyUserStateType;

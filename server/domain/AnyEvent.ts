@@ -1,4 +1,9 @@
-import { AnyAccountEvent, AnyAccountEventType } from ".";
+import {
+  AnyAccountEvent,
+  AnyAccountEventType,
+  AnyUserEvent,
+  AnyUserEventType,
+} from ".";
 
-export type AnyEvent = AnyAccountEvent;
-export type AnyEventType = AnyAccountEventType;
+export type AnyEvent = AnyAccountEvent | AnyUserEvent;
+export type AnyEventType = AnyAccountEventType | AnyUserEventType;
