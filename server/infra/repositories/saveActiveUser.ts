@@ -1,7 +1,7 @@
-import { SaveEntityPostgres, UserModel } from "../RepositoryPostgres";
+import { KnexPersist, UserModel } from "../RepositoryPostgres";
 import { ActiveUser, USER } from "../../domain";
 
-export const saveActiveUser: SaveEntityPostgres<ActiveUser> = (knex) => async (
+export const saveActiveUser: KnexPersist<ActiveUser> = ({ knex }) => async (
   entity
 ) =>
   knex<UserModel>(USER).insert({

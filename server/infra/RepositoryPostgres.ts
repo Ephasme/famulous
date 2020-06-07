@@ -33,24 +33,29 @@ export type UserCreatedModel = {
   created_salt?: string;
 };
 
-export type SaveAnyEntity = (entity: AnyEntity) => Promise<void>;
-export type SaveEntity<T extends AnyEntity> = (entity: T) => Promise<void>;
-export type SaveAnyEntityPostgres = (
-  knex: Knex<AnyEntity>,
-  logger: Logger
-) => SaveAnyEntity;
-export type SaveEntityPostgres<T extends AnyEntity> = (
-  knex: Knex<AnyEntity>,
-  logger: Logger
-) => SaveEntity<T>;
+export type Dependencies = {
+  knex: Knex<AnyEntity>;
+  logger: Logger;
+};
+
+export type PersistAny = (entity: AnyEntity) => Promise<void>;
+export type Persist<T extends AnyEntity> = (entity: T) => Promise<void>;
+export type KnexPersistAny = (dependencies: Dependencies) => PersistAny;
+export type KnexPersist<T extends AnyEntity> = (
+  dependencies: Dependencies
+) => Persist<T>;
+
+export type SaveAll = (...entities: AnyEntity[]) => Promise<void>;
 
 export class RepositoryPostgres implements Repository {
-  constructor(private knex: Knex, private logger: Logger) {}
+  private dependencies: Dependencies;
 
-  saveAll: (...entities: AnyEntity[]) => Promise<void> = saveAll(
-    this.knex,
-    this.logger
-  );
+  constructor(private knex: Knex, private logger: Logger) {
+    this.dependencies = { knex, logger };
+    this.saveAll = saveAll(this.dependencies);
+  }
+
+  saveAll: SaveAll;
 
   async fetchOne(
     domainType: AnyDomainType,
