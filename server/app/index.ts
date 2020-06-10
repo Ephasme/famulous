@@ -30,7 +30,7 @@ setupDb(logger).then((db) => {
   });
 
   app.use(securityRoutes(repo, logger));
-  app.use("/users", userRoutes(repo, logger));
+  app.use("/users", userRoutes(repo, logger, passport));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));
 });

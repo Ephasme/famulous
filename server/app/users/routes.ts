@@ -11,8 +11,13 @@ import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
 import { hashPassword } from "../security/password";
 import Logger from "../interfaces/Logger";
+import { PassportStatic } from "passport";
 
-export default (repository: Repository, logger: Logger): Router => {
+export default (
+  repository: Repository,
+  logger: Logger,
+  passport: PassportStatic
+): Router => {
   const router = Router();
 
   router.post("/", validator(createUserSchema, logger), async (req, res) => {
@@ -39,6 +44,16 @@ export default (repository: Repository, logger: Logger): Router => {
 
     res.json({ id: newState.id, email: newState.email });
   });
+
+  router.get(
+    "/",
+    passport.authenticate("jwt", { session: false }),
+    async (req, res) => {
+      const users = await repository.find(USER, {});
+
+      res.json(users);
+    }
+  );
 
   return router;
 };
