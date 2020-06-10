@@ -6,6 +6,7 @@ import validator from "../middlewares/validator";
 import Logger from "../interfaces/Logger";
 import { checkPassword } from "./password";
 import { loginSchema } from "./validators";
+import { generatingJwt } from "./jwt";
 
 export default (repository: Repository, logger: Logger): Router => {
   const router = Router();
@@ -28,8 +29,10 @@ export default (repository: Repository, logger: Logger): Router => {
       return res.sendStatus(401);
     }
 
+    const jwtToken = generatingJwt(user);
+
     logger.info(`Successful login with following user: ${email}`);
-    return res.sendStatus(200);
+    return res.send({ token: jwtToken }).status(200);
   });
 
   return router;
