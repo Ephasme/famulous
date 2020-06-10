@@ -12,6 +12,15 @@ import { EMPTY_USER } from "./EmptyUser";
 export type AnyUserState = ActiveUser | EmptyUser;
 export type AnyUserStateType = ActiveUserType | EmptyUserType;
 
+export type CreateUserCommand = {
+  name: "create-user";
+  id: string;
+  email: string;
+  password: string;
+};
+
+export type AnyUserCommand = CreateUserCommand;
+
 export function isAnyUserState(state: AnyState): state is AnyUserState {
   switch (state.type) {
     case ACTIVE_USER:

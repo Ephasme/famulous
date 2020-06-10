@@ -35,8 +35,7 @@ export default (repository: Repository, logger: Logger): Router => {
       throw new Error("user not created");
     }
 
-    await repository.save(event);
-    await repository.save(newState);
+    await repository.saveAll(event, newState);
 
     res.json({ id: newState.id, email: newState.email });
   });

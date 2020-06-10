@@ -12,7 +12,9 @@
     "build": "tsc -b ./server/app/tsconfig.json",
     "clean": "./scripts/clean.sh",
     "dev:setup": "docker-compose -f ./server/infra/local/docker-compose.yml up -d && yarn migrate",
-    "dev:start": "yarn dev:setup && nodemon ./server/app/index.ts",
+    "watch-server": "DEBUG=knex:tx nodemon ./server/app/index.ts",
+    "watch-client": "yarn --cwd client start",
+    "dev:start": "yarn dev:setup && concurrently 'yarn:watch-*'",
     "dev:teardown": "docker-compose -f ./server/infra/local/docker-compose.yml down",
     "dev:test": "./scripts/test.sh",
     "migrate": "knex migrate:latest",
@@ -20,7 +22,7 @@
     "postinstall": "yarn --cwd client",
     "prebuild": "yarn --cwd client build",
     "start": "NODE_ENV=production node ./dist/app/index.js",
-    "test": "CI=true yarn test:dev"
+    "test": "CI=true yarn dev:test"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
