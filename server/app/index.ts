@@ -2,10 +2,12 @@ import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
 
-import userRoutes from "./users/routes";
 import setupDb from "../infra/db/db";
 import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
+import userRoutes from "./users/routes";
+import securityRoutes from "./security/routes";
+import makePassportMiddleware from "./security/passport";
 
 const port = parseInt(process.env.PORT || "3001");
 
@@ -17,6 +19,7 @@ setupDb(logger).then((db) => {
 
   // Injection
   const repo = new RepositoryPostgres(db, logger);
+  const passport = makePassportMiddleware(app, repo, logger);
 
   if (process.env.NODE_ENV === "production") {
     logger.info("Application started in production mode.");
@@ -25,6 +28,9 @@ setupDb(logger).then((db) => {
   app.get("/api/give-me-something", (req, res) => {
     res.send({ value: "something" });
   });
-  app.use("/users", userRoutes(repo, logger));
+
+  app.use(securityRoutes(repo, logger));
+  app.use("/users", userRoutes(repo, logger, passport));
+
   app.listen(port, () => logger.info(`App started on port ${port}`));
 });

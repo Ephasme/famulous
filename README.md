@@ -46,6 +46,13 @@ yarn
   yarn migrate
   ```
 
+## Environment variables
+
+| Name         | Exemple                                          | Required | Description                        |
+| :----------- | :----------------------------------------------- | :------- | ---------------------------------- |
+| DATABASE_URL | postgres://admin:example@localhost:5432/famulous | true     | Database connection string         |
+| JWT_SECRET   | jwt_famulous_secret_key                          | true     | Secret key used to sign JWT tokens |
+
 ### PgAdmin (with default environment variables)
 
 #### Access to PgAdmin:
