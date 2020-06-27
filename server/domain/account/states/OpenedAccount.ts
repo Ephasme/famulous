@@ -5,11 +5,13 @@ import {
   ACCOUNT_DELETED,
   EmptyAccount,
 } from "../..";
+import { AccountState } from "./AccountState";
 
 export const OPENED_ACCOUNT = "opened-account";
 export type OpenedAccountType = typeof OPENED_ACCOUNT;
 
-export class OpenedAccount {
+export class OpenedAccount implements AccountState<OpenedAccountType> {
+  model: "account" = "account";
   type: OpenedAccountType = OPENED_ACCOUNT;
   handleEvent(ev: AnyAccountEvent): AnyAccountState {
     switch (ev.type) {

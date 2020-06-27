@@ -4,12 +4,14 @@ import {
   ACCOUNT_CREATED,
   OpenedAccount,
   ACCOUNT_DELETED,
+  AccountState,
 } from "../..";
 
 export const EMPTY_ACCOUNT = "empty-account";
 export type EmptyAccountType = typeof EMPTY_ACCOUNT;
 
-export class EmptyAccount {
+export class EmptyAccount implements AccountState<EmptyAccountType> {
+  model: "account" = "account";
   type: EmptyAccountType = EMPTY_ACCOUNT;
   handleEvent(ev: AnyAccountEvent): AnyAccountState {
     switch (ev.type) {

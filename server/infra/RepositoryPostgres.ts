@@ -1,21 +1,32 @@
 import {
   Repository,
-  FindParameters,
   USER,
-  ACCOUNT,
-  AnyUserState,
   AnyUserStateType,
   ACTIVE_USER,
   ActiveUser,
-  AnyState,
-  AnyDomainType,
   AnyEntity,
-  EmptyUser,
   EMPTY_USER,
+  AnyUserState,
+  AsyncResult,
+  ErrorWithStatus,
+  InternalError,
+  NotFound,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
 import { saveAll } from "./repositories/saveEntity";
+import { mapLeft, map, chain, right, left } from "fp-ts/lib/TaskEither";
+import { fold } from "fp-ts/lib/Option";
+import { pipe, flow } from "fp-ts/lib/function";
+import { head, map as arrayMap } from "fp-ts/lib/Array";
+import { tryCatchNormalize } from "./FpUtils";
+
+export type UserFindParameters = Partial<{
+  id: string;
+  email: string;
+}>;
+
+export type FindParameters = UserFindParameters;
 
 export type UserModel = {
   id: string;
@@ -40,14 +51,14 @@ export type Dependencies = {
   logger: Logger;
 };
 
-export type PersistAny = (entity: AnyEntity) => Promise<void>;
-export type Persist<T extends AnyEntity> = (entity: T) => Promise<void>;
+export type PersistAny = (entity: AnyEntity) => AsyncResult<void>;
+export type Persist<T extends AnyEntity> = (entity: T) => AsyncResult<void>;
 export type KnexPersistAny = (dependencies: Dependencies) => PersistAny;
 export type KnexPersist<T extends AnyEntity> = (
   dependencies: Dependencies
 ) => Persist<T>;
 
-export type SaveAll = (...entities: AnyEntity[]) => Promise<void>;
+export type SaveAll = (...entities: AnyEntity[]) => AsyncResult<void>;
 
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
@@ -59,44 +70,40 @@ export class RepositoryPostgres implements Repository {
 
   saveAll: SaveAll;
 
-  private checkUserState = (user: UserModel): AnyState => {
+  private modelToState = (user: UserModel): AnyUserState => {
     switch (user.state) {
       case ACTIVE_USER:
         this.logger.info(`Fetched active user ${user.id}`);
         return new ActiveUser(user.id, user.email, user.password, user.salt);
       case EMPTY_USER:
-        throw new Error("User state is corrupted, should not be empty.");
+        throw new Error(
+          "User state is corrupted, should not be empty in database."
+        );
       default:
         throw new Error("Object unkown");
     }
   };
 
-  async fetchOne(
-    domainType: AnyDomainType,
-    id?: string | undefined
-  ): Promise<AnyState> {
-    switch (domainType) {
-      case USER:
-        if (!id) {
-          return new EmptyUser();
-        }
-        const [user] = await this.knex<UserModel>(USER).where({ id });
-        return this.checkUserState(user);
-      case ACCOUNT:
-    }
-    throw new Error("Object unkown");
-  }
+  private findUserBy = (params: { id: string } | { email: string }) =>
+    pipe(
+      tryCatchNormalize(() => this.knex<UserModel>(USER).where(params)),
+      mapLeft(InternalError),
+      map(head),
+      chain(
+        fold(
+          () => left<ErrorWithStatus, AnyUserState>(NotFound()),
+          flow(this.modelToState, right)
+        )
+      )
+    );
 
-  async find(
-    domainType: AnyDomainType,
-    parameters: FindParameters
-  ): Promise<AnyState[]> {
-    switch (domainType) {
-      case USER:
-        const users = await this.knex<UserModel>(USER).where(parameters);
-        return users.map((user) => this.checkUserState(user));
-      case ACCOUNT:
-    }
-    throw new Error("Object unkown");
-  }
+  findUserById = (id: string) => this.findUserBy({ id });
+
+  findUserByEmail = (email: string) => this.findUserBy({ email });
+
+  findAllUsers = pipe(
+    tryCatchNormalize(() => this.knex<UserModel>(USER)),
+    mapLeft(InternalError),
+    map(arrayMap(this.modelToState))
+  );
 }
