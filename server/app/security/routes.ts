@@ -1,11 +1,10 @@
-import { Router, Response } from "express";
+import { Router } from "express";
 
 import {
   Repository,
   ACTIVE_USER,
   EMPTY_USER,
   AnyUserState,
-  Forbidden,
   ErrorWithStatus,
   Unauthorized,
   ActiveUser,
@@ -16,30 +15,30 @@ import * as P from "./password";
 import { loginSchema } from "./validators";
 import { generatingJwt } from "./jwt";
 import { pipe, flow } from "fp-ts/lib/function";
-import { chain, left, right, TaskEither } from "fp-ts/lib/TaskEither";
+import { chain, left, right, TaskEither, bimap } from "fp-ts/lib/TaskEither";
 import { foldToResponse } from "../foldToResponse";
 
-const isNotEmptyUser = (email: string) => (
+const isNotEmptyUser = (
   user: AnyUserState
 ): TaskEither<ErrorWithStatus, AnyUserState> => {
   if (user.type === EMPTY_USER) {
-    return left(Unauthorized(`Try to login with an unexisting user ${email}`));
+    return left(Unauthorized(`Try to login with an unexisting user`));
   }
   return right(user);
 };
 
-const isActiveUser = (email: string) =>
-  flow(
-    isNotEmptyUser(email),
-    chain((user) => {
-      if (user.type !== ACTIVE_USER) {
-        return left(
-          Unauthorized(`Try to login with an inactive user with ${email}`)
-        );
-      }
-      return right(user);
-    })
-  );
+const isActiveUser = flow(
+  isNotEmptyUser,
+  chain((user) => {
+    if (user.type !== ACTIVE_USER) {
+      return left(Unauthorized(`Try to login with an inactive user`));
+    }
+    return right(user);
+  })
+);
+
+const findActiveUserByEmail = (email: string) => (repository: Repository) =>
+  pipe(repository.findUserByEmail(email), chain(isActiveUser));
 
 const checkPassword = (password: string) => (
   user: ActiveUser
@@ -54,28 +53,41 @@ const checkPassword = (password: string) => (
   return right(user);
 };
 
-const generateToken = (logger: Logger) => (
+const generateToken = (
   user: ActiveUser
 ): TaskEither<ErrorWithStatus, { token: string }> => {
   const jwtToken = generatingJwt(user);
-  logger.info(`Successful login with following user: ${user.email}`);
   return right({ token: jwtToken });
 };
+
+const generateTokenWithPassword = (password: string) =>
+  flow(chain(checkPassword(password)), chain(generateToken));
 
 export default (repository: Repository, logger: Logger): Router => {
   const router = Router();
 
-  router.post("/login", validator(loginSchema, logger), (req, res) => {
-    const { email, password } = req.body;
-
-    return pipe(
-      repository.findUserByEmail(email),
-      chain(isActiveUser(email)),
-      chain(checkPassword(password)),
-      chain(generateToken(logger)),
+  router.post("/login", validator(loginSchema, logger), (req, res) =>
+    pipe(
+      pipe(repository, findActiveUserByEmail(req.body.email)),
+      generateTokenWithPassword(req.body.password),
+      bimap(
+        (err) => {
+          logger.error(
+            `error while login ${req.body.email} : ` + err.error?.message ||
+              "no message"
+          );
+          return err;
+        },
+        (succ) => {
+          logger.info(
+            `Successful login with following user: ${req.body.email}`
+          );
+          return succ;
+        }
+      ),
       foldToResponse(res)
-    )();
-  });
+    )()
+  );
 
   return router;
 };
