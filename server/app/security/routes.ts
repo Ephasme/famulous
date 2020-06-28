@@ -66,7 +66,7 @@ const generateTokenWithPassword = (password: string) =>
 export default (repository: Repository, logger: Logger): Router => {
   const router = Router();
 
-  router.post("/login", validator(loginSchema, logger), (req, res) =>
+  router.post("/", validator(loginSchema, logger), (req, res) =>
     pipe(
       pipe(repository, findActiveUserByEmail(req.body.email)),
       generateTokenWithPassword(req.body.password),

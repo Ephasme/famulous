@@ -12,10 +12,11 @@ import {
   InternalError,
   Forbidden,
   ActiveUser,
+  AsyncResult,
 } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
-import { hashPassword } from "../security/password";
+import * as S from "../security/password";
 import Logger from "../interfaces/Logger";
 import { PassportStatic } from "passport";
 import { pipe, constant } from "fp-ts/lib/function";
@@ -35,9 +36,8 @@ import { foldToResponse } from "../foldToResponse";
 // This must be changed since findBy returns Left(NotFound) instead of EmptyUser
 // Probably need to create a createUser that uses findBy to check that it results
 // in a NotFound.
-const isValidUser = (
-  user: AnyState
-): TaskEither<ErrorWithStatus, AnyUserState> => {
+const isEmptyUser = (user: AnyState): AsyncResult<AnyUserState> => {
+  console.log(user.type);
   if (user.model !== USER) {
     return left(InternalError(`expecting a user but got a ${user.model}`));
   }
@@ -51,12 +51,22 @@ const isValidUser = (
   return right(user);
 };
 
-const findValidUserById = (repository: Repository, id: string) =>
-  pipe(repository.findUserById(id), chain(isValidUser));
+const isActiveUser = (user: AnyUserState): AsyncResult<ActiveUser> => {
+  if (user.model !== USER) {
+    return left(InternalError(`expecting a user but got a ${user.model}`));
+  }
+  if (user.type !== ACTIVE_USER) {
+    return left(InternalError("user should be active"));
+  }
+  return right(user);
+};
 
-const userWithPassword = (password: string) => (user: AnyUserState) => ({
+const findOrCreate = (repository: Repository, id: string) =>
+  pipe(repository.findUserById(id), chain(isEmptyUser));
+
+const hashPassword = (password: string) => (user: AnyUserState) => ({
   user,
-  password: hashPassword(password),
+  hashResult: S.hashPassword(password),
 });
 
 const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
@@ -65,31 +75,20 @@ const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
   password: string
 ) =>
   pipe(
-    findValidUserById(repository, id),
-    map(userWithPassword(password)),
-    chain(({ user, password }) => {
-      const event = userCreated(
-        id,
-        email,
-        password.hashedPassword,
-        password.salt
-      );
+    findOrCreate(repository, id),
+    map(hashPassword(password)),
+    chain(({ user, hashResult: { hashedPassword, salt } }) => {
+      const event = userCreated(id, email, hashedPassword, salt);
       return pipe(
-        fromEither(pipe(user.handleEvent(event))),
+        fromEither(user.handleEvent(event)),
         mapLeft(InternalError),
-        chain((newState) => {
-          if (newState.type !== ACTIVE_USER) {
-            return left(
-              InternalError(
-                `creation event for user resulted in state ${newState.type}, expected ${ACTIVE_USER}`
-              )
-            );
-          }
-          return pipe(
-            repository.saveAll(newState, event),
-            map(constant(newState))
-          );
-        })
+        chain(isActiveUser),
+        chain((user) =>
+          pipe(
+            repository.saveAll(user, event),
+            map(constant({ id: user.id, email: user.email }))
+          )
+        )
       );
     }),
     mapLeft((err) => {

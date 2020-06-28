@@ -25,12 +25,9 @@ setupDb(logger).then((db) => {
     logger.info("Application started in production mode.");
     app.use(express.static(path.join(__dirname, "../../client/build")));
   }
-  app.get("/api/give-me-something", (req, res) => {
-    res.send({ value: "something" });
-  });
 
-  app.use(securityRoutes(repo, logger));
-  app.use("/users", userRoutes(repo, logger, passport));
+  app.use("/api/v1/login", securityRoutes(repo, logger));
+  app.use("/api/v1/users", userRoutes(repo, logger, passport));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));
 });

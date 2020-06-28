@@ -11,13 +11,14 @@ import {
   ErrorWithStatus,
   InternalError,
   NotFound,
+  EmptyUser,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
 import { saveAll } from "./repositories/saveEntity";
 import { mapLeft, map, chain, right, left } from "fp-ts/lib/TaskEither";
 import { fold } from "fp-ts/lib/Option";
-import { pipe, flow } from "fp-ts/lib/function";
+import { pipe, flow, constant } from "fp-ts/lib/function";
 import { head, map as arrayMap } from "fp-ts/lib/Array";
 import { tryCatchNormalize } from "./FpUtils";
 
@@ -91,7 +92,7 @@ export class RepositoryPostgres implements Repository {
       map(head),
       chain(
         fold(
-          () => left<ErrorWithStatus, AnyUserState>(NotFound()),
+          constant(right(new EmptyUser() as AnyUserState)),
           flow(this.modelToState, right)
         )
       )

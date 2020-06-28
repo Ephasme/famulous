@@ -16,5 +16,9 @@ export const saveActiveUser: KnexPersist<ActiveUser> = ({ knex }) => (entity) =>
       })
     ),
     mapLeft(InternalError),
+    map((x) => {
+      console.log("active user saved");
+      return x;
+    }),
     map(constVoid)
   );
