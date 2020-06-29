@@ -8,18 +8,25 @@ import {
   EMPTY_USER,
   AnyUserState,
   AsyncResult,
-  ErrorWithStatus,
   InternalError,
-  NotFound,
   EmptyUser,
+  ErrorWithStatus,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
 import { saveAll } from "./repositories/saveEntity";
-import { mapLeft, map, chain, right, left } from "fp-ts/lib/TaskEither";
-import { fold } from "fp-ts/lib/Option";
+import {
+  mapLeft,
+  map,
+  chain,
+  right,
+  fromEither,
+  flatten,
+} from "fp-ts/lib/TaskEither";
+import * as E from "fp-ts/lib/Either";
 import { pipe, flow, constant } from "fp-ts/lib/function";
-import { head, map as arrayMap } from "fp-ts/lib/Array";
+import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import { tryCatchNormalize } from "./FpUtils";
 
 export type UserFindParameters = Partial<{
@@ -61,6 +68,30 @@ export type KnexPersist<T extends AnyEntity> = (
 
 export type SaveAll = (...entities: AnyEntity[]) => AsyncResult<void>;
 
+const modelToState = (
+  user: UserModel
+): E.Either<ErrorWithStatus, AnyUserState> => {
+  switch (user.state) {
+    case ACTIVE_USER:
+      return E.right(
+        new ActiveUser(user.id, user.email, user.password, user.salt)
+      );
+    case EMPTY_USER:
+      return E.left(
+        InternalError(
+          "User state is corrupted, should not be empty in database."
+        )
+      );
+    default:
+      return E.left(InternalError("Object unkown"));
+  }
+};
+
+const modelsToStates = (
+  users: UserModel[]
+): E.Either<ErrorWithStatus, AnyUserState[]> =>
+  pipe(users, A.map(modelToState), A.sequence(E.either));
+
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
 
@@ -69,42 +100,27 @@ export class RepositoryPostgres implements Repository {
     this.saveAll = saveAll(this.dependencies);
   }
 
-  saveAll: SaveAll;
-
-  private modelToState = (user: UserModel): AnyUserState => {
-    switch (user.state) {
-      case ACTIVE_USER:
-        this.logger.info(`Fetched active user ${user.id}`);
-        return new ActiveUser(user.id, user.email, user.password, user.salt);
-      case EMPTY_USER:
-        throw new Error(
-          "User state is corrupted, should not be empty in database."
-        );
-      default:
-        throw new Error("Object unkown");
-    }
-  };
-
   private findUserBy = (params: { id: string } | { email: string }) =>
     pipe(
       tryCatchNormalize(() => this.knex<UserModel>(USER).where(params)),
       mapLeft(InternalError),
-      map(head),
+      map(A.head),
       chain(
-        fold(
+        O.fold(
           constant(right(new EmptyUser() as AnyUserState)),
-          flow(this.modelToState, right)
+          flow(modelToState, fromEither)
         )
       )
     );
 
-  findUserById = (id: string) => this.findUserBy({ id });
-
-  findUserByEmail = (email: string) => this.findUserBy({ email });
-
+  saveAll: SaveAll;
+  findUserById = (id: string) => pipe({ id }, this.findUserBy);
+  findUserByEmail = (email: string) => pipe({ email }, this.findUserBy);
   findAllUsers = pipe(
     tryCatchNormalize(() => this.knex<UserModel>(USER)),
     mapLeft(InternalError),
-    map(arrayMap(this.modelToState))
+    map(modelsToStates),
+    map(fromEither),
+    flatten
   );
 }

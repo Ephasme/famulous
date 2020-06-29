@@ -7,10 +7,10 @@ import {
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
 import { saveActiveUser } from "./saveActiveUser";
-import { tryCatchNormalize } from "../FpUtils";
-import { mapLeft, map } from "fp-ts/lib/TaskEither";
-import { pipe, constVoid } from "fp-ts/lib/function";
+import { taskEither, mapLeft, map, left } from "fp-ts/lib/TaskEither";
 import * as A from "fp-ts/lib/Array";
+import { pipe, constVoid } from "fp-ts/lib/function";
+import { tryCatchNormalize } from "../FpUtils";
 
 export const persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
@@ -18,26 +18,26 @@ export const persist: KnexPersistAny = (deps) => (entity) => {
     case USER_CREATED:
       return saveUserCreated(deps)(entity);
     case EMPTY_USER:
-      throw new Error("Can't save empty user.");
+      return left(InternalError("Can't save empty user."));
     case ACTIVE_USER:
       return saveActiveUser(deps)(entity);
   }
-  throw new Error("Object unkown");
+  return left(InternalError());
 };
 
 export const saveAll: (deps: Dependencies) => SaveAll = (deps) => (
   ...entities
-) => {
-  const x = deps.knex.transaction((trx) => {
-    // entities.map(persist({ ...deps, knex: trx }))
-  });
-  // pipe(
-  //   mapLeft(InternalError),
-  //   map((x) => {
-  //     deps.logger.info("entities saved");
-  //     return x;
-  //   }),
-  //   map(constVoid)
-  // );
-  throw "???";
-};
+) =>
+  pipe(
+    tryCatchNormalize(() =>
+      deps.knex.transaction((trx) =>
+        pipe(
+          entities,
+          A.map(persist({ ...deps, knex: trx })),
+          A.sequence(taskEither)
+        )()
+      )
+    ),
+    mapLeft(InternalError),
+    map(constVoid)
+  );

@@ -8,7 +8,6 @@ import {
   USER,
   AnyUserState,
   AnyState,
-  ErrorWithStatus,
   InternalError,
   Forbidden,
   ActiveUser,
@@ -24,14 +23,15 @@ import {
   chain,
   left,
   right,
-  TaskEither,
   map,
   mapLeft,
-  fold,
   fromEither,
 } from "fp-ts/lib/TaskEither";
-import { task } from "fp-ts/lib/Task";
+import * as A from "fp-ts/lib/Array";
 import { foldToResponse } from "../foldToResponse";
+import { some, none, fold } from "fp-ts/lib/Option";
+import * as TE from "fp-ts/lib/TaskEither";
+import { task } from "fp-ts/lib/Task";
 
 // This must be changed since findBy returns Left(NotFound) instead of EmptyUser
 // Probably need to create a createUser that uses findBy to check that it results
@@ -114,14 +114,27 @@ export default (
 
   router.post("/", validator(createUserSchema, logger), createUserTask);
 
-  router.get(
-    "/",
-    passport.authenticate("jwt", { session: false }),
-    async (req, res) => {
-      const users = await repository.findAllUsers();
-
-      res.json(users);
-    }
+  router.get("/", passport.authenticate("jwt", { session: false }), (_, res) =>
+    pipe(
+      repository.findAllUsers,
+      TE.fold(
+        (err) =>
+          task.of(
+            res
+              .status(500)
+              .json({ message: err.error?.message || "no message" })
+          ),
+        (users) =>
+          task.of(
+            pipe(
+              users,
+              A.filterMap((u) => (u.type !== EMPTY_USER ? some(u) : none)),
+              A.map((u) => ({ id: u.id, email: u.email })),
+              (u) => res.json(u)
+            )
+          )
+      )
+    )()
   );
 
   return router;

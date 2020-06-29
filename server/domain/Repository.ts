@@ -27,11 +27,11 @@ export function InternalError(error?: Error | string): ErrorWithStatus {
     error: isError(error) ? error : new Error(error),
   };
 }
-export type Forbidden = { error?: Error; name: "FORBIDDEN"; statusCode: 301 };
+export type Forbidden = { error?: Error; name: "FORBIDDEN"; statusCode: 403 };
 export function Forbidden(error?: Error | string): ErrorWithStatus {
   return {
     name: "FORBIDDEN",
-    statusCode: 301,
+    statusCode: 403,
     error: isError(error) ? error : new Error(error),
   };
 }

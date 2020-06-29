@@ -20,9 +20,5 @@ export const saveUserCreated: KnexPersist<UserCreated> = ({ knex }) => (
       })
     ),
     mapLeft(InternalError),
-    map((x) => {
-      console.log("usercreated saved");
-      return x;
-    }),
     map(constVoid)
   );
