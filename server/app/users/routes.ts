@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-
 import {
   Repository,
   userCreated,
@@ -29,9 +28,8 @@ import {
 } from "fp-ts/lib/TaskEither";
 import * as A from "fp-ts/lib/Array";
 import { foldToResponse } from "../foldToResponse";
-import { some, none, fold } from "fp-ts/lib/Option";
-import * as TE from "fp-ts/lib/TaskEither";
-import { task } from "fp-ts/lib/Task";
+import { some, none } from "fp-ts/lib/Option";
+import { logErrors } from "../logErrors";
 
 // This must be changed since findBy returns Left(NotFound) instead of EmptyUser
 // Probably need to create a createUser that uses findBy to check that it results
@@ -69,6 +67,19 @@ const hashPassword = (password: string) => (user: AnyUserState) => ({
   hashResult: S.hashPassword(password),
 });
 
+const buildGetAllUsersFlow = (repository: Repository, logger: Logger) =>
+  pipe(
+    repository.findAllUsers,
+    map((users) =>
+      pipe(
+        users,
+        A.filterMap((u) => (u.type !== EMPTY_USER ? some(u) : none)),
+        A.map((u) => ({ id: u.id, email: u.email }))
+      )
+    ),
+    logErrors(logger)
+  );
+
 const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
   id: string,
   email: string,
@@ -91,12 +102,7 @@ const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
         )
       );
     }),
-    mapLeft((err) => {
-      logger.error(
-        err.error?.message || `no error, status is ${err.statusCode}`
-      );
-      return err;
-    })
+    logErrors(logger)
   );
 
 export default (
@@ -105,36 +111,22 @@ export default (
   passport: PassportStatic
 ): Router => {
   const router = Router();
+
   const createUserFlow = buildCreateUserFlow(repository, logger);
   const createUserTask = (req: Request, res: Response) =>
     pipe(
       createUserFlow(req.body.id, req.body.email, req.body.password),
       foldToResponse(res)
     )();
-
   router.post("/", validator(createUserSchema, logger), createUserTask);
 
-  router.get("/", passport.authenticate("jwt", { session: false }), (_, res) =>
-    pipe(
-      repository.findAllUsers,
-      TE.fold(
-        (err) =>
-          task.of(
-            res
-              .status(500)
-              .json({ message: err.error?.message || "no message" })
-          ),
-        (users) =>
-          task.of(
-            pipe(
-              users,
-              A.filterMap((u) => (u.type !== EMPTY_USER ? some(u) : none)),
-              A.map((u) => ({ id: u.id, email: u.email })),
-              (u) => res.json(u)
-            )
-          )
-      )
-    )()
+  const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
+  const getAllUsersTask = (_: Request, res: Response) =>
+    pipe(getAllUsersFlow, foldToResponse(res))();
+  router.get(
+    "/",
+    passport.authenticate("jwt", { session: false }),
+    getAllUsersTask
   );
 
   return router;

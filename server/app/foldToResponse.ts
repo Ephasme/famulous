@@ -3,8 +3,8 @@ import { ErrorWithStatus } from "../domain";
 import { fold } from "fp-ts/lib/TaskEither";
 import * as T from "fp-ts/lib/Task";
 
-export const foldToResponse = <T>(res: Response) =>
-  fold<ErrorWithStatus, T, Response>(
+export const foldToResponse = <Result>(res: Response) =>
+  fold<ErrorWithStatus, Result, Response>(
     (error) =>
       T.of(
         res
