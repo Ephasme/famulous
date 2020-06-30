@@ -1,29 +1,16 @@
-// This must be changed since findBy returns Left(NotFound) instead of EmptyUser
-// Probably need to create a createUser that uses findBy to check that it results
-
-import {
-  AnyState,
-  AsyncResult,
-  AnyUserState,
-  USER,
-  InternalError,
-  EMPTY_USER,
-  Forbidden,
-} from "../../domain";
+import { Forbidden, EmptyUser } from "../../domain";
 import { left, right } from "fp-ts/lib/TaskEither";
+import { flow } from "fp-ts/lib/function";
+import { fold } from "fp-ts/lib/Option";
+import { isNotEmptyUser } from "./isNotEmptyUser";
 
-// in a NotFound.
-export const isEmptyUser = (user: AnyState): AsyncResult<AnyUserState> => {
-  console.log(user.type);
-  if (user.model !== USER) {
-    return left(InternalError(`expecting a user but got a ${user.model}`));
-  }
-  if (user.type !== EMPTY_USER) {
-    return left(
-      Forbidden(
-        `tried to create a user with an existing id ${user.id} ${user.email}`
+export const isEmptyUser = flow(
+  isNotEmptyUser,
+  fold(
+    () => right(new EmptyUser()),
+    ({ id, email }) =>
+      left(
+        Forbidden(`tried to create a user with an existing id ${id} ${email}`)
       )
-    );
-  }
-  return right(user);
-};
+  )
+);

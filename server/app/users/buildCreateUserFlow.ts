@@ -1,12 +1,7 @@
 import { Repository, userCreated, InternalError } from "../../domain";
 import { pipe, constant, flow } from "fp-ts/lib/function";
 import { findUserOrCreate } from "./findUserOrCreate";
-import {
-  mapLeft,
-  map,
-  chain,
-  fromEither as toEitherAsync,
-} from "fp-ts/lib/TaskEither";
+import { mapLeft, map, chain, fromEither } from "fp-ts/lib/TaskEither";
 import { withHashedPassword } from "./hashPassword";
 import { logErrors } from "../logErrors";
 import Logger from "../interfaces/Logger";
@@ -24,7 +19,7 @@ export const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
     chain(({ user, hashResult: { hashedPassword, salt } }) => {
       const event = userCreated(id, email, hashedPassword, salt);
       return pipe(
-        pipe(user.handleEvent(event), toEitherAsync, mapLeft(InternalError)),
+        pipe(user.handleEvent(event), fromEither, mapLeft(InternalError)),
         chain(
           flow(
             isActiveUser,

@@ -11,6 +11,9 @@ import { Either } from "fp-ts/lib/Either";
 export type AnyUserState = ActiveUser | EmptyUser;
 export type AnyUserStateType = ActiveUserType | EmptyUserType;
 
+export type AnyNonEmptyUserState = Exclude<AnyUserState, EmptyUser>;
+export type AnyNonEmptyUserStateType = Exclude<AnyUserStateType, EmptyUserType>;
+
 export type CreateUserCommand = {
   name: "create-user";
   id: string;
