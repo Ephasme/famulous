@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 
-interface HashPasswordResult {
+export interface HashPasswordResult {
   salt: string;
   hashedPassword: string;
 }

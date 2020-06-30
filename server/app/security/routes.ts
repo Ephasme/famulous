@@ -2,9 +2,6 @@ import { Router } from "express";
 
 import {
   Repository,
-  ACTIVE_USER,
-  EMPTY_USER,
-  AnyUserState,
   ErrorWithStatus,
   Unauthorized,
   ActiveUser,
@@ -17,28 +14,17 @@ import { generatingJwt } from "./jwt";
 import { pipe, flow } from "fp-ts/lib/function";
 import { chain, left, right, TaskEither, bimap } from "fp-ts/lib/TaskEither";
 import { foldToResponse } from "../foldToResponse";
+import { isActiveUser } from "./isActiveUser";
+import { unauthorizedIfNone } from "./unauthorizedIfNone";
 
-const isNotEmptyUser = (
-  user: AnyUserState
-): TaskEither<ErrorWithStatus, AnyUserState> => {
-  if (user.type === EMPTY_USER) {
-    return left(Unauthorized(`Try to login with an unexisting user`));
-  }
-  return right(user);
-};
-
-const isActiveUser = flow(
-  isNotEmptyUser,
-  chain((user) => {
-    if (user.type !== ACTIVE_USER) {
-      return left(Unauthorized(`Try to login with an inactive user`));
-    }
-    return right(user);
-  })
-);
+const isActiveOrUnauthorized = (message: string) =>
+  flow(isActiveUser, unauthorizedIfNone(message));
 
 const findActiveUserByEmail = (email: string) => (repository: Repository) =>
-  pipe(repository.findUserByEmail(email), chain(isActiveUser));
+  pipe(
+    repository.findUserByEmail(email),
+    chain(isActiveOrUnauthorized(`Try to login with an inactive user ${email}`))
+  );
 
 const checkPassword = (password: string) => (
   user: ActiveUser
