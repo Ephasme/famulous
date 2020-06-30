@@ -12,18 +12,27 @@ import * as P from "./password";
 import { loginSchema } from "./validators";
 import { generatingJwt } from "./jwt";
 import { pipe, flow } from "fp-ts/lib/function";
-import { chain, left, right, TaskEither, bimap } from "fp-ts/lib/TaskEither";
+import {
+  chain,
+  left,
+  right,
+  TaskEither,
+  bimap,
+  map,
+} from "fp-ts/lib/TaskEither";
 import { foldToResponse } from "../foldToResponse";
-import { isActiveUser } from "./isActiveUser";
-import { unauthorizedIfNone } from "./unauthorizedIfNone";
+import { isActiveUser } from "../users/isActiveUser";
+import { orUnauthorized as orUnauthorizedWith } from "../errorsIfNone";
 
-const isActiveOrUnauthorized = (message: string) =>
-  flow(isActiveUser, unauthorizedIfNone(message));
-
-const findActiveUserByEmail = (email: string) => (repository: Repository) =>
+const findUser = (email: string) => (repository: Repository) =>
   pipe(
     repository.findUserByEmail(email),
-    chain(isActiveOrUnauthorized(`Try to login with an inactive user ${email}`))
+    chain(
+      flow(
+        isActiveUser,
+        orUnauthorizedWith(`Try to login with an inactive user ${email}`)
+      )
+    )
   );
 
 const checkPassword = (password: string) => (
@@ -54,7 +63,7 @@ export default (repository: Repository, logger: Logger): Router => {
 
   router.post("/", validator(loginSchema, logger), (req, res) =>
     pipe(
-      pipe(repository, findActiveUserByEmail(req.body.email)),
+      pipe(repository, findUser(req.body.email)),
       generateTokenWithPassword(req.body.password),
       bimap(
         (err) => {

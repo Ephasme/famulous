@@ -1,12 +1,17 @@
 import { Repository, userCreated, InternalError } from "../../domain";
-import { pipe, constant } from "fp-ts/lib/function";
+import { pipe, constant, flow } from "fp-ts/lib/function";
 import { findUserOrCreate } from "./findUserOrCreate";
-import { map, chain, fromEither } from "fp-ts/lib/TaskEither";
+import {
+  mapLeft,
+  map,
+  chain,
+  fromEither as toEitherAsync,
+} from "fp-ts/lib/TaskEither";
 import { withHashedPassword } from "./hashPassword";
-import { mapLeft } from "fp-ts/lib/TaskEither";
-import { isActiveUser } from "./isActiveUser";
 import { logErrors } from "../logErrors";
 import Logger from "../interfaces/Logger";
+import { isActiveUser } from "./isActiveUser";
+import { orInternalError as orInternalErrorWith } from "../errorsIfNone";
 
 export const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
   id: string,
@@ -19,9 +24,15 @@ export const buildCreateUserFlow = (repository: Repository, logger: Logger) => (
     chain(({ user, hashResult: { hashedPassword, salt } }) => {
       const event = userCreated(id, email, hashedPassword, salt);
       return pipe(
-        fromEither(user.handleEvent(event)),
-        mapLeft(InternalError),
-        chain(isActiveUser),
+        pipe(user.handleEvent(event), toEitherAsync, mapLeft(InternalError)),
+        chain(
+          flow(
+            isActiveUser,
+            orInternalErrorWith(
+              `can't create user ${email} with id ${id}, event did not result on an active user`
+            )
+          )
+        ),
         chain((user) =>
           pipe(
             repository.saveAll(user, event),
