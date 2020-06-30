@@ -1,7 +1,7 @@
-import { ACTIVE_USER } from "../../domain";
+import { ACTIVE_USER } from "..";
 import { flow } from "fp-ts/lib/function";
-import { isNotEmptyUser } from "./isNotEmptyUser";
 import { some, none, filterMap } from "fp-ts/lib/Option";
+import { isNotEmptyUser } from "./isNotEmptyUser";
 
 export const isActiveUser = flow(
   isNotEmptyUser,

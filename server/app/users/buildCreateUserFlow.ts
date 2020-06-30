@@ -1,11 +1,15 @@
-import { Repository, userCreated, InternalError } from "../../domain";
+import {
+  Repository,
+  userCreated,
+  InternalError,
+  isActiveUser,
+} from "../../domain";
 import { pipe, constant, flow } from "fp-ts/lib/function";
 import { findUserOrCreate } from "./findUserOrCreate";
 import { mapLeft, map, chain, fromEither } from "fp-ts/lib/TaskEither";
 import { withHashedPassword } from "./hashPassword";
 import { logErrors } from "../logErrors";
 import Logger from "../interfaces/Logger";
-import { isActiveUser } from "./isActiveUser";
 import { orInternalError as orInternalErrorWith } from "../errorsIfNone";
 
 export const buildCreateUserFlow = (repository: Repository, logger: Logger) => (

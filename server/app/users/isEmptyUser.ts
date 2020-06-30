@@ -1,8 +1,7 @@
-import { Forbidden, EmptyUser } from "../../domain";
+import { Forbidden, EmptyUser, isNotEmptyUser } from "../../domain";
 import { left, right } from "fp-ts/lib/TaskEither";
 import { flow } from "fp-ts/lib/function";
 import { fold } from "fp-ts/lib/Option";
-import { isNotEmptyUser } from "./isNotEmptyUser";
 
 export const isEmptyUser = flow(
   isNotEmptyUser,

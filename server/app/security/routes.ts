@@ -5,6 +5,7 @@ import {
   ErrorWithStatus,
   Unauthorized,
   ActiveUser,
+  isActiveUser,
 } from "../../domain";
 import validator from "../middlewares/validator";
 import Logger from "../interfaces/Logger";
@@ -21,7 +22,6 @@ import {
   map,
 } from "fp-ts/lib/TaskEither";
 import { foldToResponse } from "../foldToResponse";
-import { isActiveUser } from "../users/isActiveUser";
 import { orUnauthorized as orUnauthorizedWith } from "../errorsIfNone";
 
 const findUser = (email: string) => (repository: Repository) =>

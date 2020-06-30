@@ -20,6 +20,10 @@ export * from "./user/states/UserState";
 export * from "./user/states/EmptyUser";
 export * from "./user/states/ActiveUser";
 
+// Exporting functions
+export * from "./user/isActiveUser";
+export * from "./user/isNotEmptyUser";
+
 // ACCOUNT
 // Exporting events
 export * from "./account/events/AccountCreated";
