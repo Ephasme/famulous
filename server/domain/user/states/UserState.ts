@@ -6,7 +6,6 @@ import {
   EmptyUserType,
 } from "../..";
 import { AggregateState } from "../../AggregateState";
-import { Either } from "fp-ts/lib/Either";
 
 export type AnyUserState = ActiveUser | EmptyUser;
 export type AnyUserStateType = ActiveUserType | EmptyUserType;
@@ -27,7 +26,6 @@ export const USER = "user";
 export type UserType = typeof USER;
 
 export interface UserState<T extends AnyUserStateType>
-  extends AggregateState<T, UserType> {
+  extends AggregateState<AnyUserState, AnyUserEvent, T, UserType> {
   type: T;
-  handleEvent(ev: AnyUserEvent): Either<Error, AnyUserState>;
 }

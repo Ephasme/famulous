@@ -6,8 +6,10 @@ import setupDb from "../infra/db/db";
 import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
 import userRoutes from "./users/routes";
+import accountRoutes from "./accounts/routes";
 import securityRoutes from "./security/routes";
 import makePassportMiddleware from "./security/passport";
+import { authenticatorFactory } from "./security/authenticate";
 
 const port = parseInt(process.env.PORT || "3001");
 
@@ -20,6 +22,7 @@ setupDb(logger).then((db) => {
   // Injection
   const repo = new RepositoryPostgres(db, logger);
   const passport = makePassportMiddleware(app, repo, logger);
+  const auth = authenticatorFactory(passport);
 
   if (process.env.NODE_ENV === "production") {
     logger.info("Application started in production mode.");
@@ -27,7 +30,11 @@ setupDb(logger).then((db) => {
   }
 
   app.use("/api/v1/login", securityRoutes(repo, logger));
-  app.use("/api/v1/users", userRoutes(repo, logger, passport));
+  app.use(
+    "/api/v1/users",
+    userRoutes(repo, logger, authenticatorFactory(passport))
+  );
+  app.use("/api/v1/accounts", accountRoutes(repo, logger, auth));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));
 });

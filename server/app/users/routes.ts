@@ -1,18 +1,18 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, RequestHandler } from "express";
 import { Repository } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
 import Logger from "../interfaces/Logger";
-import { PassportStatic } from "passport";
 import { pipe } from "fp-ts/lib/function";
 import { foldToResponse } from "../foldToResponse";
 import { buildCreateUserFlow } from "./buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./buildGetAllUsersFlow";
+import { Authenticator } from "../security/authenticate";
 
 export default (
   repository: Repository,
   logger: Logger,
-  passport: PassportStatic
+  authenticate: Authenticator
 ): Router => {
   const router = Router();
 
@@ -27,11 +27,7 @@ export default (
   const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
   const getAllUsersTask = (_: Request, res: Response) =>
     pipe(getAllUsersFlow, foldToResponse(res))();
-  router.get(
-    "/",
-    passport.authenticate("jwt", { session: false }),
-    getAllUsersTask
-  );
+  router.get("/", authenticate, getAllUsersTask);
 
   return router;
 };

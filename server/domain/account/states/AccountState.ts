@@ -15,9 +15,8 @@ export const ACCOUNT = "account";
 export type AccountType = typeof ACCOUNT;
 
 export interface AccountState<T extends AnyAccountStateType>
-  extends AggregateState<T, AccountType> {
+  extends AggregateState<AnyAccountState, AnyAccountEvent, T, AccountType> {
   type: T;
-  handleEvent(ev: AnyAccountEvent): AnyAccountState;
 }
 
 export function isAccount(input: AnyState): input is AnyAccountState {

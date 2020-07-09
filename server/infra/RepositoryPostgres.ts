@@ -11,6 +11,14 @@ import {
   InternalError,
   EmptyUser,
   ErrorWithStatus,
+  ACCOUNT,
+  AnyAccountStateType,
+  EmptyAccount,
+  AnyAccountState,
+  OPENED_ACCOUNT,
+  OpenedAccount,
+  EMPTY_ACCOUNT,
+  AnyDomainType,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
@@ -44,6 +52,14 @@ export type UserModel = {
   salt: string;
 };
 
+export type AccountModel = {
+  id: string;
+  state: AnyAccountStateType;
+  name: string;
+  balance: number;
+  currency: string;
+};
+
 export type UserCreatedModel = {
   id: string;
   type: string;
@@ -52,6 +68,16 @@ export type UserCreatedModel = {
   created_email?: string;
   created_password?: string;
   created_salt?: string;
+};
+
+export type AccountCreatedModel = {
+  id: string;
+  type: string;
+  aggregate_id: string;
+  aggregate_type: string;
+  created_name: string;
+  created_user_id: string;
+  created_currency: string;
 };
 
 export type Dependencies = {
@@ -68,47 +94,85 @@ export type KnexPersist<T extends AnyEntity> = (
 
 export type SaveAll = (...entities: AnyEntity[]) => AsyncResult<void>;
 
-const modelToState = (
-  user: UserModel
-): E.Either<ErrorWithStatus, AnyUserState> => {
-  switch (user.state) {
-    case ACTIVE_USER:
-      return E.right(
-        new ActiveUser(user.id, user.email, user.password, user.salt)
-      );
-    case EMPTY_USER:
-      return E.left(
-        InternalError(
-          "User state is corrupted, should not be empty in database."
-        )
-      );
-    default:
-      return E.left(InternalError("Object unkown"));
-  }
-};
+namespace AccountModelUtils {
+  export const modelToState = (
+    account: AccountModel
+  ): E.Either<ErrorWithStatus, AnyAccountState> => {
+    switch (account.state) {
+      case OPENED_ACCOUNT:
+        return E.right(
+          new OpenedAccount(
+            account.id,
+            account.name,
+            account.currency,
+            account.balance
+          )
+        );
+      case EMPTY_ACCOUNT:
+        return E.left(
+          InternalError("Account state is corrupted, should not be empty.")
+        );
+    }
+  };
+  export const modelsToStates = (
+    accounts: AccountModel[]
+  ): E.Either<ErrorWithStatus, AnyAccountState[]> =>
+    pipe(accounts, A.map(AccountModelUtils.modelToState), A.sequence(E.either));
+}
 
-const modelsToStates = (
-  users: UserModel[]
-): E.Either<ErrorWithStatus, AnyUserState[]> =>
-  pipe(users, A.map(modelToState), A.sequence(E.either));
+namespace UserModelUtils {
+  export const modelToState = (
+    user: UserModel
+  ): E.Either<ErrorWithStatus, AnyUserState> => {
+    switch (user.state) {
+      case ACTIVE_USER:
+        return E.right(
+          new ActiveUser(user.id, user.email, user.password, user.salt)
+        );
+      case EMPTY_USER:
+        return E.left(
+          InternalError(
+            "User state is corrupted, should not be empty in database."
+          )
+        );
+      default:
+        return E.left(InternalError("Object unkown"));
+    }
+  };
+
+  export const modelsToStates = (
+    users: UserModel[]
+  ): E.Either<ErrorWithStatus, AnyUserState[]> =>
+    pipe(users, A.map(UserModelUtils.modelToState), A.sequence(E.either));
+}
 
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
 
-  constructor(private knex: Knex, private logger: Logger) {
+  constructor(private knex: Knex, logger: Logger) {
     this.dependencies = { knex, logger };
     this.saveAll = saveAll(this.dependencies);
   }
 
+  private fetch = <T>(str: AnyDomainType, params: Record<string, any>) =>
+    pipe(
+      tryCatchNormalize(() => this.knex<T>(str).where(params)),
+      mapLeft(InternalError)
+    );
+
+  private fetchOne = <T>(str: AnyDomainType, params: any) =>
+    pipe(
+      this.fetch<T>(str, params),
+      map((x) => (x.length !== 1 ? O.none : O.some(x[0])))
+    );
+
   private findUserBy = (params: { id: string } | { email: string }) =>
     pipe(
-      tryCatchNormalize(() => this.knex<UserModel>(USER).where(params)),
-      mapLeft(InternalError),
-      map(A.head),
+      this.fetchOne<UserModel>(USER, params),
       chain(
         O.fold(
           constant(right(new EmptyUser() as AnyUserState)),
-          flow(modelToState, fromEither)
+          flow(UserModelUtils.modelToState, fromEither)
         )
       )
     );
@@ -119,7 +183,27 @@ export class RepositoryPostgres implements Repository {
   findAllUsers = pipe(
     tryCatchNormalize(() => this.knex<UserModel>(USER)),
     mapLeft(InternalError),
-    map(modelsToStates),
+    map(UserModelUtils.modelsToStates),
+    map(fromEither),
+    flatten
+  );
+
+  private findAccountBy = (params: { id: string }) =>
+    pipe(
+      this.fetchOne<AccountModel>(ACCOUNT, params),
+      chain(
+        O.fold(
+          constant(right(new EmptyAccount() as AnyAccountState)),
+          flow(AccountModelUtils.modelToState, fromEither)
+        )
+      )
+    );
+
+  findAccountById = (id: string) => pipe({ id }, this.findAccountBy);
+  findAllAccounts = pipe(
+    tryCatchNormalize(() => this.knex<AccountModel>(ACCOUNT)),
+    mapLeft(InternalError),
+    map(AccountModelUtils.modelsToStates),
     map(fromEither),
     flatten
   );
