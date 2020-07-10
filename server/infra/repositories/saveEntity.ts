@@ -10,12 +10,19 @@ import {
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
 import { saveActiveUser } from "./saveActiveUser";
-import { taskEither, mapLeft, map, left } from "fp-ts/lib/TaskEither";
+import {
+  taskEither,
+  mapLeft,
+  map,
+  chain,
+  left,
+  fromEither,
+} from "fp-ts/lib/TaskEither";
 import * as A from "fp-ts/lib/Array";
 import { pipe, constVoid } from "fp-ts/lib/function";
-import { tryCatchNormalize } from "../FpUtils";
 import { saveAccountCreated } from "./saveAccountCreated";
 import { saveOpenedAccount } from "./saveOpenedAccount";
+import { tryCatchNormalize } from "../FpUtils";
 
 export const persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
@@ -40,24 +47,26 @@ export const saveAll: (deps: Dependencies) => SaveAll = (deps) => (
 ) =>
   pipe(
     tryCatchNormalize(() =>
-      deps.knex.transaction((trx) =>
+      // This returns a Promise that we need to catch and normalize.
+      // Errors that arise here are problems while opening transaction.
+      // Errors in 'persist' are turned into either.
+      deps.knex.transaction((
+        trx // Conveniently, a transaction implements Knex.
+      ) =>
         pipe(
           entities,
           A.map(persist({ ...deps, knex: trx })),
-          A.sequence(taskEither),
-          mapLeft((er) => {
-            console.error(er.error.message);
-            return er;
-          })
+          A.sequence(taskEither)
         )()
       )
     ),
-    //! this is buggy, the error from tryCatchNormalize is swallowed.
-    //TODO: fix the swallowing
-    mapLeft((x) => {
-      console.error(x.message);
-      return x;
+    // This gives back a Either<Error, Either<E, A>>.
+    // We need to change the error into error with status.
+    mapLeft((e) => {
+      deps.logger.error(`error while opening transaction ${e.message}`);
+      return InternalError(e);
     }),
-    mapLeft(InternalError),
+    // Changes the either into taskEither and flatten.
+    chain(fromEither),
     map(constVoid)
   );
