@@ -13,8 +13,9 @@ export async function up(knex: Knex): Promise<any> {
     table.string("type").notNullable();
     table.string("aggregate_id").notNullable();
     table.string("aggregate_type").notNullable();
-    table.string("created_email");
-    table.string("created_password");
+    table.string("created_name");
+    table.uuid("created_user_id");
+    table.string("created_currency");
   });
 }
 
