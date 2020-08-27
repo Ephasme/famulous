@@ -2,7 +2,7 @@ import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
 
-import setupDb from "../infra/repositories/db";
+import setupDb from "../infra/db/db";
 import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
 import userRoutes from "./users/routes";
