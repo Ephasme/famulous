@@ -1,5 +1,6 @@
 import * as express from "express";
 import * as path from "path";
+import * as cors from "cors";
 import * as bodyParser from "body-parser";
 
 import setupDb from "../infra/repositories/db";
@@ -18,6 +19,11 @@ const logger = new ConsoleLogger();
 setupDb(logger).then((db) => {
   const app = express();
   app.use(bodyParser.json());
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+    })
+  );
 
   // Injection
   const repo = new RepositoryPostgres(db, logger);
