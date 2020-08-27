@@ -25,7 +25,7 @@ setupDb(logger).then((db) => {
     })
   );
 
-  // Injection
+  // Service instanciations
   const repo = new RepositoryPostgres(db, logger);
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
@@ -36,10 +36,7 @@ setupDb(logger).then((db) => {
   }
 
   app.use("/api/v1/login", securityRoutes(repo, logger));
-  app.use(
-    "/api/v1/users",
-    userRoutes(repo, logger, authenticatorFactory(passport))
-  );
+  app.use("/api/v1/users", userRoutes(repo, logger, auth));
   app.use("/api/v1/accounts", accountRoutes(repo, logger, auth));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));
