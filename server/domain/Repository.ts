@@ -2,6 +2,7 @@ import { AnyEntity, AnyUserState } from ".";
 import { TaskEither } from "fp-ts/lib/TaskEither";
 import { isError } from "util";
 import { AnyAccountState } from "./account/states/AccountState";
+import { AccountModel } from "./AccountModel";
 
 export type NotFound = {
   error: Error;
@@ -101,5 +102,5 @@ export interface Repository {
   findAllUsers: AsyncResult<AnyUserState[]>;
 
   findAccountById(id: string): AsyncResult<AnyAccountState>;
-  findAllAccounts: AsyncResult<AnyAccountState[]>;
+  findAllAccounts(userId: string): AsyncResult<AccountModel[]>;
 }

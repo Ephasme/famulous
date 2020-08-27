@@ -1,24 +1,16 @@
 import {
   Repository,
   USER,
-  AnyUserStateType,
-  ACTIVE_USER,
-  ActiveUser,
   AnyEntity,
-  EMPTY_USER,
   AnyUserState,
   AsyncResult,
   InternalError,
   EmptyUser,
   ErrorWithStatus,
-  ACCOUNT,
-  AnyAccountStateType,
   EmptyAccount,
   AnyAccountState,
-  OPENED_ACCOUNT,
-  OpenedAccount,
-  EMPTY_ACCOUNT,
   AnyDomainType,
+  NotFound,
 } from "../domain";
 import Knex = require("knex");
 import Logger from "../app/interfaces/Logger";
@@ -29,71 +21,31 @@ import {
   chain,
   right,
   fromEither,
+  fold,
+  fromOption,
   flatten,
 } from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
-import { pipe, flow, constant, constVoid } from "fp-ts/lib/function";
+import { pipe, flow, constant } from "fp-ts/lib/function";
 import * as A from "fp-ts/lib/Array";
 import * as O from "fp-ts/lib/Option";
 import { tryCatchNormalize } from "./FpUtils";
+import { UserModel } from "./entities/UserModel";
+import { AccountModel } from "../domain/AccountModel";
+import { AccountsToUsersModel } from "./entities/AccountsToUsersModel";
+import { Persist, PersistAny } from "../domain/Persist";
 
 export type UserFindParameters = Partial<{
   id: string;
   email: string;
 }>;
-
 export type FindParameters = UserFindParameters;
-
-export type UserModel = {
-  id: string;
-  state: AnyUserStateType;
-  email: string;
-  password: string;
-  salt: string;
-};
-
-export type AccountModel = {
-  id: string;
-  state: AnyAccountStateType;
-  name: string;
-  balance: number;
-  currency: string;
-};
-
-export type UserCreatedModel = {
-  id: string;
-  type: string;
-  aggregate_id: string;
-  aggregate_type: string;
-  created_email?: string;
-  created_password?: string;
-  created_salt?: string;
-};
-
-export type AccountCreatedModel = {
-  id: string;
-  type: string;
-  aggregate_id: string;
-  aggregate_type: string;
-  created_name: string;
-  created_user_id: string;
-  created_currency: string;
-};
-
-export type AccountDeletedModel = {
-  id: string;
-  type: string;
-  aggregate_id: string;
-  aggregate_type: string;
-};
 
 export type Dependencies = {
   knex: Knex<AnyEntity>;
   logger: Logger;
 };
 
-export type PersistAny = (entity: AnyEntity) => AsyncResult<void>;
-export type Persist<T extends AnyEntity> = (entity: T) => AsyncResult<void>;
 export type KnexPersistAny = (dependencies: Dependencies) => PersistAny;
 export type KnexPersist<T extends AnyEntity> = (
   dependencies: Dependencies
@@ -101,57 +53,10 @@ export type KnexPersist<T extends AnyEntity> = (
 
 export type SaveAll = (...entities: AnyEntity[]) => AsyncResult<void>;
 
-namespace AccountModelUtils {
-  export const modelToState = (
-    account: AccountModel
-  ): E.Either<ErrorWithStatus, AnyAccountState> => {
-    switch (account.state) {
-      case OPENED_ACCOUNT:
-        return E.right(
-          new OpenedAccount(
-            account.id,
-            account.name,
-            account.currency,
-            account.balance
-          )
-        );
-      case EMPTY_ACCOUNT:
-        return E.left(
-          InternalError("Account state is corrupted, should not be empty.")
-        );
-    }
-  };
-  export const modelsToStates = (
-    accounts: AccountModel[]
-  ): E.Either<ErrorWithStatus, AnyAccountState[]> =>
-    pipe(accounts, A.map(AccountModelUtils.modelToState), A.sequence(E.either));
-}
-
-namespace UserModelUtils {
-  export const modelToState = (
-    user: UserModel
-  ): E.Either<ErrorWithStatus, AnyUserState> => {
-    switch (user.state) {
-      case ACTIVE_USER:
-        return E.right(
-          new ActiveUser(user.id, user.email, user.password, user.salt)
-        );
-      case EMPTY_USER:
-        return E.left(
-          InternalError(
-            "User state is corrupted, should not be empty in database."
-          )
-        );
-      default:
-        return E.left(InternalError("Object unkown"));
-    }
-  };
-
-  export const modelsToStates = (
-    users: UserModel[]
-  ): E.Either<ErrorWithStatus, AnyUserState[]> =>
-    pipe(users, A.map(UserModelUtils.modelToState), A.sequence(E.either));
-}
+export const userModelsToStates = (
+  users: UserModel[]
+): E.Either<ErrorWithStatus, AnyUserState[]> =>
+  pipe(users, A.map(UserModel.toState), A.sequence(E.either));
 
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
@@ -179,7 +84,7 @@ export class RepositoryPostgres implements Repository {
       chain(
         O.fold(
           constant(right(new EmptyUser() as AnyUserState)),
-          flow(UserModelUtils.modelToState, fromEither)
+          flow(UserModel.toState, fromEither)
         )
       )
     );
@@ -191,28 +96,54 @@ export class RepositoryPostgres implements Repository {
   findAllUsers = pipe(
     tryCatchNormalize(() => this.knex<UserModel>(USER)),
     mapLeft(InternalError),
-    map(UserModelUtils.modelsToStates),
+    map(userModelsToStates),
     map(fromEither),
     flatten
   );
 
   private findAccountBy = (params: { id: string }) =>
     pipe(
-      this.fetchOne<AccountModel>(ACCOUNT, params),
-      chain(
-        O.fold(
-          constant(right(new EmptyAccount(params.id) as AnyAccountState)),
-          flow(AccountModelUtils.modelToState, fromEither)
-        )
+      tryCatchNormalize(() => {
+        return Promise.all([
+          this.knex<AccountModel>("account").where({ id: params.id }),
+          this.knex<AccountsToUsersModel>("accounts_to_users").where({
+            account_id: params.id,
+          }),
+        ]);
+      }),
+      mapLeft(InternalError),
+      chain(([accounts, usersId]) => {
+        return pipe(
+          accounts,
+          A.head,
+          O.map((account) => ({
+            account,
+            usersId: usersId.map((x) => x.user_id),
+          })),
+          fromOption(NotFound)
+        );
+      }),
+      fold(
+        constant(right(new EmptyAccount(params.id) as AnyAccountState)),
+        flow(AccountModel.toState, fromEither)
       )
     );
 
   findAccountById = (id: string) => pipe({ id }, this.findAccountBy);
-  findAllAccounts = pipe(
-    tryCatchNormalize(() => this.knex<AccountModel>(ACCOUNT)),
-    mapLeft(InternalError),
-    map(AccountModelUtils.modelsToStates),
-    map(fromEither),
-    flatten
-  );
+  findAllAccounts = (userId: string) =>
+    pipe(
+      tryCatchNormalize(() =>
+        this.knex
+          .from("accounts_to_users")
+          .innerJoin("user", "user.id", "accounts_to_users.user_id")
+          .innerJoin("account", "account.id", "accounts_to_users.account_id")
+          .select<AccountModel[]>(["account.*"])
+          .where({ "user.id": userId })
+      ),
+      map((accounts) => {
+        console.log(JSON.stringify(accounts));
+        return accounts;
+      }),
+      mapLeft(InternalError)
+    );
 }

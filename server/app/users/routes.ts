@@ -26,7 +26,14 @@ export default (
 
   const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
   const getAllUsersTask = (_: Request, res: Response) =>
-    pipe(getAllUsersFlow, foldToResponse(res))();
+    pipe(
+      getAllUsersFlow,
+      (flowResult) => {
+        logger.info(JSON.stringify(_.user));
+        return flowResult;
+      },
+      foldToResponse(res)
+    )();
   router.get("/", authenticate, getAllUsersTask);
 
   return router;

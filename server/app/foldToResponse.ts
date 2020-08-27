@@ -9,7 +9,7 @@ export const foldToResponse = <Result>(res: Response) =>
       T.of(
         res
           .status(error.statusCode)
-          .json({ message: error.error?.message || "no message" })
+          .json({ message: error.error.message || "no message" })
       ),
     (result) => T.of(res.status(200).json(result))
   );

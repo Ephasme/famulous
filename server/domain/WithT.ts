@@ -1,1 +1,1 @@
-export type With<T> = { payload: T }
+export type With<T> = { payload: T };

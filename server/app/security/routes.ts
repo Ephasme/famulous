@@ -68,7 +68,7 @@ export default (repository: Repository, logger: Logger): Router => {
       bimap(
         (err) => {
           logger.error(
-            `error while login ${req.body.email} : ` + err.error?.message ||
+            `error while login ${req.body.email} : ` + err.error.message ||
               "no message"
           );
           return err;

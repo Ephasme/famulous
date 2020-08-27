@@ -16,7 +16,6 @@ import {
   mapLeft,
   map,
   chain,
-  left,
   fromEither,
 } from "fp-ts/lib/TaskEither";
 import * as A from "fp-ts/lib/Array";
@@ -45,7 +44,6 @@ export const persist: KnexPersistAny = (deps) => (entity) => {
     case EMPTY_USER:
       throw new Error("not handled");
   }
-  return left(InternalError());
 };
 
 export const saveAll: (deps: Dependencies) => SaveAll = (deps) => (

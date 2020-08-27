@@ -4,9 +4,11 @@ import {
   ACCOUNT_CREATED,
   ACCOUNT_DELETED,
   EmptyAccount,
+  AnyUserState,
 } from "../..";
 import { AccountState, ACCOUNT } from "./AccountState";
 import { left, Either, right } from "fp-ts/lib/Either";
+import { Task } from "fp-ts/lib/Task";
 
 export const OPENED_ACCOUNT = "opened-account";
 export type OpenedAccountType = typeof OPENED_ACCOUNT;
@@ -28,6 +30,7 @@ export class OpenedAccount implements AccountState<OpenedAccountType> {
     readonly id: string,
     readonly name: string,
     readonly currency: string,
-    readonly balance: number
+    readonly balance: number,
+    readonly usersId: string[]
   ) {}
 }
