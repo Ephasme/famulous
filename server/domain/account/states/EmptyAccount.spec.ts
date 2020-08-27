@@ -9,7 +9,7 @@ import { OpenedAccount } from "./OpenedAccount";
 
 describe("EmptyAccount", () => {
   it("should be in opened state when given a Created event", () => {
-    const before = new EmptyAccount();
+    const before = new EmptyAccount("someid");
     const ev = accountCreated("someid", "somename", "user_id", "EUR");
     const after = (before.handleEvent(ev) as Right<OpenedAccount>).right;
 
@@ -22,7 +22,7 @@ describe("EmptyAccount", () => {
   });
 
   it("should fail when received Deleted event", () => {
-    const before = new EmptyAccount();
+    const before = new EmptyAccount("someid");
     expect(() => before.handleEvent(accountDeleted("someid"))).toThrow();
   });
 });
