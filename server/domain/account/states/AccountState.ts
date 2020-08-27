@@ -16,6 +16,7 @@ export type AccountType = typeof ACCOUNT;
 
 export interface AccountState<T extends AnyAccountStateType>
   extends AggregateState<AnyAccountState, AnyAccountEvent, T, AccountType> {
+  model: typeof ACCOUNT;
   type: T;
 }
 

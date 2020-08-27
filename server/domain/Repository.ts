@@ -95,6 +95,7 @@ export type AsyncResult<T> = TaskEither<ErrorWithStatus, T>;
 
 export interface Repository {
   saveAll(...entity: AnyEntity[]): AsyncResult<void>;
+
   findUserById(id: string): AsyncResult<AnyUserState>;
   findUserByEmail(email: string): AsyncResult<AnyUserState>;
   findAllUsers: AsyncResult<AnyUserState[]>;

@@ -15,6 +15,10 @@ const uuid = pipe(
   })
 );
 
+const deleteAccountCommandValidator = D.type({
+  id: uuid,
+});
+
 const createAccountCommandValidator = D.type({
   id: uuid,
   user_id: uuid,
@@ -26,7 +30,16 @@ export type CreateAccountCommand = D.TypeOf<
   typeof createAccountCommandValidator
 >;
 
+export type DeleteAccountCommand = D.TypeOf<
+  typeof deleteAccountCommandValidator
+>;
+
 export const validateCreateAccountCommand = flow(
   createAccountCommandValidator.decode,
+  mapLeft(flow(D.draw, UnprocessableEntity))
+);
+
+export const validateDeleteAccountCommand = flow(
+  deleteAccountCommandValidator.decode,
   mapLeft(flow(D.draw, UnprocessableEntity))
 );

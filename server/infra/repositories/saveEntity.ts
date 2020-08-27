@@ -7,6 +7,7 @@ import {
   ACCOUNT_CREATED,
   OPENED_ACCOUNT,
   EMPTY_ACCOUNT,
+  ACCOUNT_DELETED,
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
 import { saveActiveUser } from "./saveActiveUser";
@@ -23,6 +24,8 @@ import { pipe, constVoid } from "fp-ts/lib/function";
 import { saveAccountCreated } from "./saveAccountCreated";
 import { saveOpenedAccount } from "./saveOpenedAccount";
 import { tryCatchNormalize } from "../FpUtils";
+import { saveEmptyAccount } from "./saveEmptyAccount";
+import { saveAccountDeleted } from "./saveAccountDeleted";
 
 export const persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
@@ -35,9 +38,12 @@ export const persist: KnexPersistAny = (deps) => (entity) => {
       return saveUserCreated(deps)(entity);
     case ACTIVE_USER:
       return saveActiveUser(deps)(entity);
+    case ACCOUNT_DELETED:
+      return saveAccountDeleted(deps)(entity);
     case EMPTY_ACCOUNT:
+      return saveEmptyAccount(deps)(entity);
     case EMPTY_USER:
-      return left(InternalError("Can't save empty entity."));
+      throw new Error("not handled");
   }
   return left(InternalError());
 };

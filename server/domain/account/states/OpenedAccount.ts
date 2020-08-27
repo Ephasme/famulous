@@ -5,7 +5,7 @@ import {
   ACCOUNT_DELETED,
   EmptyAccount,
 } from "../..";
-import { AccountState } from "./AccountState";
+import { AccountState, ACCOUNT } from "./AccountState";
 import { left, Either, right } from "fp-ts/lib/Either";
 
 export const OPENED_ACCOUNT = "opened-account";
@@ -21,7 +21,7 @@ export class OpenedAccount implements AccountState<OpenedAccountType> {
           new Error(`Account ${this.name} (id: ${this.id}) is already created.`)
         );
       case ACCOUNT_DELETED:
-        return right(new EmptyAccount());
+        return right(new EmptyAccount(this.id));
     }
   }
   constructor(

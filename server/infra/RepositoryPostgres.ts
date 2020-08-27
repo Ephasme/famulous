@@ -32,7 +32,7 @@ import {
   flatten,
 } from "fp-ts/lib/TaskEither";
 import * as E from "fp-ts/lib/Either";
-import { pipe, flow, constant } from "fp-ts/lib/function";
+import { pipe, flow, constant, constVoid } from "fp-ts/lib/function";
 import * as A from "fp-ts/lib/Array";
 import * as O from "fp-ts/lib/Option";
 import { tryCatchNormalize } from "./FpUtils";
@@ -78,6 +78,13 @@ export type AccountCreatedModel = {
   created_name: string;
   created_user_id: string;
   created_currency: string;
+};
+
+export type AccountDeletedModel = {
+  id: string;
+  type: string;
+  aggregate_id: string;
+  aggregate_type: string;
 };
 
 export type Dependencies = {
@@ -178,6 +185,7 @@ export class RepositoryPostgres implements Repository {
     );
 
   saveAll: SaveAll;
+
   findUserById = (id: string) => pipe({ id }, this.findUserBy);
   findUserByEmail = (email: string) => pipe({ email }, this.findUserBy);
   findAllUsers = pipe(
@@ -193,7 +201,7 @@ export class RepositoryPostgres implements Repository {
       this.fetchOne<AccountModel>(ACCOUNT, params),
       chain(
         O.fold(
-          constant(right(new EmptyAccount() as AnyAccountState)),
+          constant(right(new EmptyAccount(params.id) as AnyAccountState)),
           flow(AccountModelUtils.modelToState, fromEither)
         )
       )

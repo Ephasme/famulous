@@ -5,6 +5,7 @@ import {
   OpenedAccount,
   ACCOUNT_DELETED,
   AccountState,
+  ACCOUNT,
 } from "../..";
 import { right, left, Either } from "fp-ts/lib/Either";
 
@@ -14,6 +15,7 @@ export type EmptyAccountType = typeof EMPTY_ACCOUNT;
 export class EmptyAccount implements AccountState<EmptyAccountType> {
   model: "account" = "account";
   type: EmptyAccountType = EMPTY_ACCOUNT;
+  constructor(public id: string) {}
   handleEvent(ev: AnyAccountEvent): Either<Error, AnyAccountState> {
     switch (ev.type) {
       case ACCOUNT_CREATED:
