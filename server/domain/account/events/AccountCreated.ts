@@ -6,6 +6,8 @@ export type AccountCreatedType = typeof ACCOUNT_CREATED;
 
 interface Payload {
   name: string;
+  user_id: string;
+  currency: string;
 }
 
 export interface AccountCreated
@@ -13,13 +15,18 @@ export interface AccountCreated
     With<Payload> {}
 
 class AccountCreatedImpl implements AccountCreated {
-  static make(id: string, name: string): AccountCreated {
+  static make(
+    id: string,
+    name: string,
+    user_id: string,
+    currency: string
+  ): AccountCreated {
     return new AccountCreatedImpl(
       uuid.v4(),
       ACCOUNT_CREATED,
       { id, type: ACCOUNT },
       Date.now(),
-      { name }
+      { name, user_id, currency }
     );
   }
 

@@ -1,43 +1,88 @@
 import { Router } from "express";
 
-import { USER } from "../../domain/user/states/UserState";
-import { Repository, ACTIVE_USER } from "../../domain";
+import {
+  Repository,
+  ErrorWithStatus,
+  Unauthorized,
+  ActiveUser,
+  isActiveUser,
+} from "../../domain";
 import validator from "../middlewares/validator";
 import Logger from "../interfaces/Logger";
-import { checkPassword } from "./password";
+import * as P from "./password";
 import { loginSchema } from "./validators";
 import { generatingJwt } from "./jwt";
+import { pipe, flow } from "fp-ts/lib/function";
+import {
+  chain,
+  left,
+  right,
+  TaskEither,
+  bimap,
+  map,
+} from "fp-ts/lib/TaskEither";
+import { foldToResponse } from "../foldToResponse";
+import { orUnauthorized as orUnauthorizedWith } from "../errorsIfNone";
+
+const findUser = (email: string) => (repository: Repository) =>
+  pipe(
+    repository.findUserByEmail(email),
+    chain(
+      flow(
+        isActiveUser,
+        orUnauthorizedWith(`Try to login with an inactive user ${email}`)
+      )
+    )
+  );
+
+const checkPassword = (password: string) => (
+  user: ActiveUser
+): TaskEither<ErrorWithStatus, ActiveUser> => {
+  if (!P.checkPassword(password, user.salt, user.password)) {
+    return left(
+      Unauthorized(
+        `Try to login to following user with a bad password: ${user.email}`
+      )
+    );
+  }
+  return right(user);
+};
+
+const generateToken = (
+  user: ActiveUser
+): TaskEither<ErrorWithStatus, { token: string }> => {
+  const jwtToken = generatingJwt(user);
+  return right({ token: jwtToken });
+};
+
+const generateTokenWithPassword = (password: string) =>
+  flow(chain(checkPassword(password)), chain(generateToken));
 
 export default (repository: Repository, logger: Logger): Router => {
   const router = Router();
 
-  router.post("/login", validator(loginSchema, logger), async (req, res) => {
-    const { email, password } = req.body;
-    const users = await repository.find(USER, { email });
-
-    if (!users.length) {
-      logger.info(`Try to login with an unexisting user: ${email}`);
-      return res.sendStatus(401);
-    }
-
-    const [user] = users;
-    if (user.type !== ACTIVE_USER) {
-      logger.info(`Try to login with an inactive user: ${email}`);
-      return res.sendStatus(401);
-    }
-
-    if (!checkPassword(password, user.salt, user.password)) {
-      logger.info(
-        `Try to login to following user with a bad password: ${email}`
-      );
-      return res.sendStatus(401);
-    }
-
-    const jwtToken = generatingJwt(user);
-
-    logger.info(`Successful login with following user: ${email}`);
-    return res.json({ token: jwtToken }).status(200);
-  });
+  router.post("/", validator(loginSchema, logger), (req, res) =>
+    pipe(
+      pipe(repository, findUser(req.body.email)),
+      generateTokenWithPassword(req.body.password),
+      bimap(
+        (err) => {
+          logger.error(
+            `error while login ${req.body.email} : ` + err.error?.message ||
+              "no message"
+          );
+          return err;
+        },
+        (succ) => {
+          logger.info(
+            `Successful login with following user: ${req.body.email}`
+          );
+          return succ;
+        }
+      ),
+      foldToResponse(res)
+    )()
+  );
 
   return router;
 };

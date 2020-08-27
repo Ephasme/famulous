@@ -4,7 +4,9 @@ import {
   OpenedAccountType,
   EmptyAccountType,
   AnyAccountEvent,
+  AggregateState,
 } from "../..";
+import { AnyState } from "../../AnyState";
 
 export type AnyAccountState = OpenedAccount | EmptyAccount;
 export type AnyAccountStateType = OpenedAccountType | EmptyAccountType;
@@ -12,7 +14,12 @@ export type AnyAccountStateType = OpenedAccountType | EmptyAccountType;
 export const ACCOUNT = "account";
 export type AccountType = typeof ACCOUNT;
 
-export interface AccountState {
-  type: AnyAccountStateType;
-  handleEvent(ev: AnyAccountEvent): AnyAccountState;
+export interface AccountState<T extends AnyAccountStateType>
+  extends AggregateState<AnyAccountState, AnyAccountEvent, T, AccountType> {
+  model: typeof ACCOUNT;
+  type: T;
+}
+
+export function isAccount(input: AnyState): input is AnyAccountState {
+  return input.model === ACCOUNT;
 }

@@ -5,12 +5,13 @@ import {
   EmptyUser,
   EmptyUserType,
 } from "../..";
-import { AnyState } from "../../AnyState";
-import { ACTIVE_USER } from "./ActiveUser";
-import { EMPTY_USER } from "./EmptyUser";
+import { AggregateState } from "../../AggregateState";
 
 export type AnyUserState = ActiveUser | EmptyUser;
 export type AnyUserStateType = ActiveUserType | EmptyUserType;
+
+export type AnyNonEmptyUserState = Exclude<AnyUserState, EmptyUser>;
+export type AnyNonEmptyUserStateType = Exclude<AnyUserStateType, EmptyUserType>;
 
 export type CreateUserCommand = {
   name: "create-user";
@@ -21,19 +22,10 @@ export type CreateUserCommand = {
 
 export type AnyUserCommand = CreateUserCommand;
 
-export function isAnyUserState(state: AnyState): state is AnyUserState {
-  switch (state.type) {
-    case ACTIVE_USER:
-    case EMPTY_USER:
-      return true;
-  }
-  return false;
-}
-
 export const USER = "user";
 export type UserType = typeof USER;
 
-export interface UserState {
-  type: AnyUserStateType;
-  handleEvent(ev: AnyUserEvent): AnyUserState;
+export interface UserState<T extends AnyUserStateType>
+  extends AggregateState<AnyUserState, AnyUserEvent, T, UserType> {
+  type: T;
 }

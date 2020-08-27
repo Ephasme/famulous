@@ -1,59 +1,33 @@
-import { Router } from "express";
-
-import {
-  Repository,
-  USER,
-  userCreated,
-  isAnyUserState,
-  ACTIVE_USER,
-} from "../../domain";
+import { Router, Request, Response, RequestHandler } from "express";
+import { Repository } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
-import { hashPassword } from "../security/password";
 import Logger from "../interfaces/Logger";
-import { PassportStatic } from "passport";
+import { pipe } from "fp-ts/lib/function";
+import { foldToResponse } from "../foldToResponse";
+import { buildCreateUserFlow } from "./buildCreateUserFlow";
+import { buildGetAllUsersFlow } from "./buildGetAllUsersFlow";
+import { Authenticator } from "../security/authenticate";
 
 export default (
   repository: Repository,
   logger: Logger,
-  passport: PassportStatic
+  authenticate: Authenticator
 ): Router => {
   const router = Router();
 
-  router.post("/", validator(createUserSchema, logger), async (req, res) => {
-    const state = await repository.fetchOne(USER);
-    if (!isAnyUserState(state)) {
-      throw new Error("state is not user");
-    }
+  const createUserFlow = buildCreateUserFlow(repository, logger);
+  const createUserTask = (req: Request, res: Response) =>
+    pipe(
+      createUserFlow(req.body.id, req.body.email, req.body.password),
+      foldToResponse(res)
+    )();
+  router.post("/", validator(createUserSchema, logger), createUserTask);
 
-    const { hashedPassword, salt } = hashPassword(req.body.password);
-
-    const event = userCreated(
-      req.body.id,
-      req.body.email,
-      hashedPassword,
-      salt
-    );
-    const newState = state.handleEvent(event);
-
-    if (newState.type !== ACTIVE_USER) {
-      throw new Error("user not created");
-    }
-
-    await repository.saveAll(event, newState);
-
-    res.json({ id: newState.id, email: newState.email });
-  });
-
-  router.get(
-    "/",
-    passport.authenticate("jwt", { session: false }),
-    async (req, res) => {
-      const users = await repository.find(USER, {});
-
-      res.json(users);
-    }
-  );
+  const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
+  const getAllUsersTask = (_: Request, res: Response) =>
+    pipe(getAllUsersFlow, foldToResponse(res))();
+  router.get("/", authenticate, getAllUsersTask);
 
   return router;
 };
