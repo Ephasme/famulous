@@ -1,4 +1,5 @@
-import { KnexPersist, AccountCreatedModel } from "../RepositoryPostgres";
+import { KnexPersist } from "../RepositoryPostgres";
+import { AccountCreatedModel } from "../entities/AccountCreatedModel";
 import { InternalError, AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
@@ -16,7 +17,7 @@ export const saveAccountCreated: KnexPersist<AccountCreated> = ({ knex }) => (
         aggregate_type: entity.aggregate.type,
         created_currency: entity.payload.currency,
         created_name: entity.payload.name,
-        created_user_id: entity.payload.user_id,
+        created_user_id: entity.payload.userId,
       })
     ),
     mapLeft(InternalError),

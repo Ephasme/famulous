@@ -8,12 +8,12 @@ export async function up(knex: Knex): Promise<void> {
     table.string("password").notNullable();
   });
   await knex.schema.createTable("user_events", function (table) {
-    table.uuid("id").notNullable().unique().index()
-    table.string("type").notNullable()
-    table.string("aggregate_id").notNullable()
-    table.string("aggregate_type").notNullable()
-    table.string("created_email")
-    table.string("created_password")
+    table.uuid("id").notNullable().unique().index();
+    table.string("type").notNullable();
+    table.string("aggregate_id").notNullable();
+    table.string("aggregate_type").notNullable();
+    table.string("created_email");
+    table.string("created_password");
   });
 }
 

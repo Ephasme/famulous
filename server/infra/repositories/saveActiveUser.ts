@@ -1,4 +1,5 @@
-import { KnexPersist, UserModel } from "../RepositoryPostgres";
+import { KnexPersist } from "../RepositoryPostgres";
+import { UserModel } from "../entities/UserModel";
 import { ActiveUser, USER, InternalError } from "../../domain";
 import { tryCatchNormalize } from "../FpUtils";
 import { pipe, constVoid } from "fp-ts/lib/function";

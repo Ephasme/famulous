@@ -1,13 +1,14 @@
 {
-    "parser":  "@typescript-eslint/parser",
-    "extends": [
-        "plugin:@typescript-eslint/recommended",
-        "prettier/@typescript-eslint",
-        "plugin:prettier/recommended"
-    ],
-    "rules": {
-        "prettier/prettier": "error",
-        "@typescript-eslint/no-var-requires": "warn",
-        "@typescript-eslint/camelcase": ["error", { "properties": "never" }]
-    }
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "prettier/prettier": "error",
+    "@typescript-eslint/no-var-requires": "warn",
+    "@typescript-eslint/camelcase": ["error", { "properties": "never" }],
+    "@typescript-eslint/no-inferrable-types": false
+  }
 }

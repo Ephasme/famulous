@@ -9,7 +9,7 @@ import { EmptyAccount } from "./EmptyAccount";
 
 describe("OpenedAccount", () => {
   it("should be in empty state when given a Deleted event", () => {
-    const before = new OpenedAccount("someid", "somename", "EUR", 142);
+    const before = new OpenedAccount("someid", "somename", "EUR", 142, []);
     const ev = accountDeleted("someid");
     const after = (before.handleEvent(ev) as Right<EmptyAccount>).right;
 
@@ -17,7 +17,7 @@ describe("OpenedAccount", () => {
   });
 
   it("should fail when received Created event", () => {
-    const before = new OpenedAccount("someid", "somename", "EUR", 874);
+    const before = new OpenedAccount("someid", "somename", "EUR", 874, []);
     expect(
       before.handleEvent(
         accountCreated("someid2", "somename2", "user-id", "EUR")

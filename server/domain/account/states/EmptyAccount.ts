@@ -24,7 +24,8 @@ export class EmptyAccount implements AccountState<EmptyAccountType> {
             ev.aggregate.id,
             ev.payload.name,
             ev.payload.currency,
-            0
+            0,
+            [ev.payload.userId]
           )
         );
       case ACCOUNT_DELETED:

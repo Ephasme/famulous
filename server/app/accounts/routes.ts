@@ -25,6 +25,7 @@ import {
   mapLeft,
 } from "fp-ts/lib/TaskEither";
 import { foldToResponse } from "../foldToResponse";
+import { UserModel } from "../../infra/entities/UserModel";
 
 export default (
   repository: Repository,
@@ -126,6 +127,17 @@ export default (
       ),
       foldToResponse(res)
     )();
+  });
+
+  router.get("/", auth, async (req, res) => {
+    const user = req.user as UserModel;
+    if (!user) {
+      throw new Error("user not found");
+    }
+    const e = await repository.findAllAccounts(user.id)();
+    if (e._tag === "Right") {
+      res.json(e.right);
+    }
   });
 
   return router;

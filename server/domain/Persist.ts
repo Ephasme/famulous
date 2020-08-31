@@ -1,3 +1,4 @@
-import { AnyEntity } from "./AnyEntity";
+import { AnyEntity, AsyncResult } from ".";
 
-export type Persist = (entity: AnyEntity[]) => Promise<void>
+export type PersistAny = (entity: AnyEntity) => AsyncResult<void>;
+export type Persist<T extends AnyEntity> = (entity: T) => AsyncResult<void>;

@@ -1,14 +1,6 @@
-import {
-  KnexPersist,
-  AccountCreatedModel,
-  AccountDeletedModel,
-} from "../RepositoryPostgres";
-import {
-  AccountCreated,
-  InternalError,
-  EmptyAccount,
-  AccountDeleted,
-} from "../../domain";
+import { KnexPersist } from "../RepositoryPostgres";
+import { AccountDeletedModel } from "../entities/AccountDeletedModel";
+import { InternalError, AccountDeleted } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { tryCatchNormalize } from "../FpUtils";
 import { map, mapLeft } from "fp-ts/lib/TaskEither";
