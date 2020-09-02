@@ -134,9 +134,13 @@ export default (
     if (!user) {
       throw new Error("user not found");
     }
+
     const e = await repository.findAllAccounts(user.id)();
+
     if (e._tag === "Right") {
       res.json(e.right);
+    } else {
+      res.status(500); // TODO: functional programming
     }
   });
 

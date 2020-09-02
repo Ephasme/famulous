@@ -2,6 +2,8 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 
 import { LoginPage, SuccesfulLogin } from "./LoginPage";
+import { AccountPage } from "./AccountPage";
+import { Layout } from "../components/Layout";
 
 type RoutesProps = {
   onUserConnection: (state: SuccesfulLogin) => null;
@@ -22,17 +24,17 @@ export default class Routes extends React.Component<RoutesProps> {
             </Route>
           </div>
         ) : (
-          <div>
-            <Route path="/about">
-              <div>IT'S ABOUT</div>
+          <Layout>
+            <Route exact={true} path="/accounts/:id">
+              <AccountPage />
             </Route>
-            <Route path="/users">
+            <Route exact={true} path="/users">
               <div>IT'S USERS</div>
             </Route>
-            <Route path="/">
+            <Route exact={true} path="/">
               <div>IT'S HOME</div>
             </Route>
-          </div>
+          </Layout>
         )}
       </Switch>
     );
