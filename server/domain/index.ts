@@ -34,3 +34,8 @@ export * from "./account/events/AccountEvent";
 export * from "./account/states/AccountState";
 export * from "./account/states/EmptyAccount";
 export * from "./account/states/OpenedAccount";
+
+// TRANSACTION
+// Exporting events
+export * from "./transaction/events/TransactionCreated";
+export * from "./transaction/events/TransactionEvent";
