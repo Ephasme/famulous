@@ -8,6 +8,7 @@ import {
   OPENED_ACCOUNT,
   EMPTY_ACCOUNT,
   ACCOUNT_DELETED,
+  TRANSACTION_CREATED,
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
 import { saveActiveUser } from "./saveActiveUser";
@@ -25,6 +26,8 @@ import { saveOpenedAccount } from "./saveOpenedAccount";
 import { tryCatchNormalize } from "../FpUtils";
 import { saveEmptyAccount } from "./saveEmptyAccount";
 import { saveAccountDeleted } from "./saveAccountDeleted";
+import { saveTransactionCreated } from "./saveTransactionCreated";
+import { saveTransactionModel } from "./saveTransactionModel";
 
 export const persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
@@ -43,6 +46,11 @@ export const persist: KnexPersistAny = (deps) => (entity) => {
       return saveEmptyAccount(deps)(entity);
     case EMPTY_USER:
       throw new Error("not handled");
+    case TRANSACTION_CREATED:
+      return pipe(
+        saveTransactionCreated(deps)(entity),
+        chain(() => saveTransactionModel(deps)(entity))
+      );
   }
 };
 
