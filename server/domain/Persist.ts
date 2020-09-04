@@ -1,4 +1,4 @@
-import { AnyEntity, AsyncResult } from ".";
+import { AsyncResult, AnyEvent } from ".";
 
-export type PersistAny = (entity: AnyEntity) => AsyncResult<void>;
-export type Persist<T extends AnyEntity> = (entity: T) => AsyncResult<void>;
+export type PersistAny = (event: AnyEvent) => AsyncResult<void>;
+export type Persist<T extends AnyEvent> = (entity: T) => AsyncResult<void>;

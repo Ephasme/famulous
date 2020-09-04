@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { UserEvent, With, USER, AggregateInfo, UserType } from "../..";
+import { UserEvent, With, AggregateInfo, USER, UserType } from "../..";
 
 export const USER_CREATED = "user.created";
 export type UserCreatedType = typeof USER_CREATED;

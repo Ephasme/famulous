@@ -4,8 +4,7 @@ import {
   Repository,
   ErrorWithStatus,
   Unauthorized,
-  ActiveUser,
-  isActiveUser,
+  UserModel,
 } from "../../domain";
 import validator from "../middlewares/validator";
 import Logger from "../interfaces/Logger";
@@ -13,31 +12,19 @@ import * as P from "./password";
 import { loginSchema } from "./validators";
 import { generatingJwt } from "./jwt";
 import { pipe, flow } from "fp-ts/lib/function";
-import {
-  chain,
-  left,
-  right,
-  TaskEither,
-  bimap,
-  map,
-} from "fp-ts/lib/TaskEither";
-import { foldToResponse } from "../foldToResponse";
+import { chain, left, right, TaskEither, bimap } from "fp-ts/lib/TaskEither";
 import { orUnauthorized as orUnauthorizedWith } from "../errorsIfNone";
+import { foldToOk } from "../responseFolders";
 
 const findUser = (email: string) => (repository: Repository) =>
   pipe(
     repository.findUserByEmail(email),
-    chain(
-      flow(
-        isActiveUser,
-        orUnauthorizedWith(`Try to login with an inactive user ${email}`)
-      )
-    )
+    chain(orUnauthorizedWith(`Try to login with an inactive user ${email}`))
   );
 
 const checkPassword = (password: string) => (
-  user: ActiveUser
-): TaskEither<ErrorWithStatus, ActiveUser> => {
+  user: UserModel
+): TaskEither<ErrorWithStatus, UserModel> => {
   if (!P.checkPassword(password, user.salt, user.password)) {
     return left(
       Unauthorized(
@@ -49,7 +36,7 @@ const checkPassword = (password: string) => (
 };
 
 const generateToken = (
-  user: ActiveUser
+  user: UserModel
 ): TaskEither<ErrorWithStatus, { token: string }> => {
   const jwtToken = generatingJwt(user);
   return right({ token: jwtToken });
@@ -80,7 +67,7 @@ export default (repository: Repository, logger: Logger): Router => {
           return succ;
         }
       ),
-      foldToResponse(res)
+      foldToOk(res)
     )()
   );
 

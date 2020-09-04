@@ -1,10 +1,10 @@
-import { Router, Request, Response, RequestHandler } from "express";
+import { Router, Request, Response } from "express";
 import { Repository } from "../../domain";
 import validator from "../middlewares/validator";
 import { createUserSchema } from "./validators";
 import Logger from "../interfaces/Logger";
 import { pipe } from "fp-ts/lib/function";
-import { foldToResponse } from "../foldToResponse";
+import { foldToCreated, foldToOk } from "../responseFolders";
 import { buildCreateUserFlow } from "./buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./buildGetAllUsersFlow";
 import { Authenticator } from "../security/authenticate";
@@ -20,20 +20,13 @@ export default (
   const createUserTask = (req: Request, res: Response) =>
     pipe(
       createUserFlow(req.body.id, req.body.email, req.body.password),
-      foldToResponse(res)
+      foldToCreated(res)
     )();
   router.post("/", validator(createUserSchema, logger), createUserTask);
 
   const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
   const getAllUsersTask = (_: Request, res: Response) =>
-    pipe(
-      getAllUsersFlow,
-      (flowResult) => {
-        logger.info(JSON.stringify(_.user));
-        return flowResult;
-      },
-      foldToResponse(res)
-    )();
+    pipe(getAllUsersFlow, foldToOk(res))();
   router.get("/", authenticate, getAllUsersTask);
 
   return router;

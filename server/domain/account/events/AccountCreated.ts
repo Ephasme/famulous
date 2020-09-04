@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { AccountEvent, ACCOUNT, AggregateInfo, AccountType, With } from "../..";
+import { AccountEvent, AggregateInfo, With, ACCOUNT, AccountType } from "../..";
 
 export const ACCOUNT_CREATED = "account.created";
 export type AccountCreatedType = typeof ACCOUNT_CREATED;

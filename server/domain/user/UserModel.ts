@@ -1,8 +1,9 @@
-export type UserStateType = "active" | "inactive";
+export const USER = "user";
+export type UserType = typeof USER;
 
 export type UserModel = {
   id: string;
-  state: UserStateType;
+  state: "active" | "inactive";
   email: string;
   password: string;
   salt: string;

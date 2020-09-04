@@ -1,10 +1,10 @@
 import * as jwt from "jsonwebtoken";
-import { ActiveUser } from "../../domain";
+import { UserModel } from "../../domain";
 
 const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret";
 
-export const generatingJwt = ({ id, email, type }: ActiveUser): string => {
+export const generatingJwt = ({ id, email }: UserModel): string => {
   const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // expiration = 1 hour later
 
-  return jwt.sign({ id, email, type, exp: expirationTime }, jwtSecret);
+  return jwt.sign({ id, email, exp: expirationTime }, jwtSecret);
 };

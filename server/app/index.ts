@@ -16,28 +16,27 @@ const port = parseInt(process.env.PORT || "3001");
 
 const logger = new ConsoleLogger();
 
-setupDb(logger)
-  .then((db ) => {
-    const app = express();
-    app.use(bodyParser.json());
-    app.use(
-      cors({
-        origin: "http://localhost:3000",
-      })
-    );
+setupDb(logger).then((db) => {
+  const app = express();
+  app.use(bodyParser.json());
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+    })
+  );
 
-    // Service instanciations
-    const repo = new RepositoryPostgres(db, logger);
-    const passport = makePassportMiddleware(app, repo, logger);
-    const auth = authenticatorFactory(passport);
-    if (process.env.NODE_ENV === "production") {
-      logger.info("Application started in production mode.");
-      app.use(express.static(path.join(__dirname, "../../client/build")));
-    }
+  // Service instanciations
+  const repo = new RepositoryPostgres(db, logger);
+  const passport = makePassportMiddleware(app, repo, logger);
+  const auth = authenticatorFactory(passport);
+  if (process.env.NODE_ENV === "production") {
+    logger.info("Application started in production mode.");
+    app.use(express.static(path.join(__dirname, "../../client/build")));
+  }
 
-    app.use("/api/v1/login", securityRoutes(repo, logger));
-    app.use("/api/v1/users", userRoutes(repo, logger, auth));
-    app.use("/api/v1/accounts", accountRoutes(repo, logger, auth));
+  app.use("/api/v1/login", securityRoutes(repo, logger));
+  app.use("/api/v1/users", userRoutes(repo, logger, auth));
+  app.use("/api/v1/accounts", accountRoutes(repo, auth));
 
-    app.listen(port, () => logger.info(`App started on port ${port}`));
-  });
+  app.listen(port, () => logger.info(`App started on port ${port}`));
+});

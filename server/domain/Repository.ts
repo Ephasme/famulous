@@ -1,8 +1,9 @@
-import { AnyEntity, AnyUserState } from ".";
 import { TaskEither } from "fp-ts/lib/TaskEither";
+import { Option } from "fp-ts/lib/Option";
 import { isError } from "util";
-import { AnyAccountState } from "./account/states/AccountState";
 import { AccountModel } from "./AccountModel";
+import { AnyEvent } from ".";
+import { UserModel } from "./user/UserModel";
 
 export type NotFound = {
   error: Error;
@@ -95,12 +96,12 @@ export type ErrorWithStatus =
 export type AsyncResult<T> = TaskEither<ErrorWithStatus, T>;
 
 export interface Repository {
-  saveAll(...entity: AnyEntity[]): AsyncResult<void>;
+  persist(...events: AnyEvent[]): AsyncResult<void>;
 
-  findUserById(id: string): AsyncResult<AnyUserState>;
-  findUserByEmail(email: string): AsyncResult<AnyUserState>;
-  findAllUsers: AsyncResult<AnyUserState[]>;
+  findUserById(id: string): AsyncResult<Option<UserModel>>;
+  findUserByEmail(email: string): AsyncResult<Option<UserModel>>;
+  findAllUsers: AsyncResult<UserModel[]>;
 
-  findAccountById(id: string): AsyncResult<AnyAccountState>;
+  findAccountById(id: string): AsyncResult<Option<AccountModel>>;
   findAllAccounts(userId: string): AsyncResult<AccountModel[]>;
 }
