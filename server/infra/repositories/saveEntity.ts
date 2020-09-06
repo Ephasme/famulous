@@ -8,6 +8,7 @@ import {
   UserCreated,
   UserModel,
   AccountDeleted,
+  TRANSACTION_CREATED,
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
 import {
@@ -26,6 +27,8 @@ import { Persist } from "../../domain/Persist";
 import { AccountModel } from "../../domain/AccountModel";
 import { AccountsToUsersModel } from "../entities/AccountsToUsersModel";
 import { InternalError } from "../interfaces/Repository";
+import { saveTransactionCreated } from "./saveTransactionCreated";
+import { saveTransactionModel } from "./saveTransactionModel";
 
 const saveUserModel = ({ knex }: Dependencies) => (event: UserCreated) => {
   return pipe(
@@ -102,6 +105,11 @@ export const _persist: KnexPersistAny = (deps) => (entity) => {
       return pipe(
         saveAccountDeleted(deps)(entity),
         chain(() => saveAccountModel(deps)(entity))
+      );
+    case TRANSACTION_CREATED:
+      return pipe(
+        saveTransactionCreated(deps)(entity),
+        chain(() => saveTransactionModel(deps)(entity))
       );
     default:
       throw new Error("Unhandled event");

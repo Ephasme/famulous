@@ -8,6 +8,7 @@ import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
 import userRoutes from "./users/routes";
 import accountRoutes from "./accounts/routes";
+import transactionRoutes from "./transactions/routes";
 import securityRoutes from "./security/routes";
 import makePassportMiddleware from "./security/passport";
 import { authenticatorFactory } from "./security/authenticate";
@@ -46,6 +47,7 @@ setupDb(logger).then((db) => {
   app.use("/api/v1/login", securityRoutes(repo, logger));
   app.use("/api/v1/users", userRoutes(auth, userFlows));
   app.use("/api/v1/accounts", accountRoutes(repo, auth));
+  app.use("/api/v1/transactions", transactionRoutes(repo, auth));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));
 });

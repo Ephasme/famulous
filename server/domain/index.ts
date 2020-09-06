@@ -17,3 +17,8 @@ export * from "./account/AccountModel";
 export * from "./account/events/AccountCreated";
 export * from "./account/events/AccountDeleted";
 export * from "./account/events/AccountEvent";
+
+// TRANSACTION
+// Exporting events
+export * from "./transaction/events/TransactionCreated";
+export * from "./transaction/events/TransactionEvent";
