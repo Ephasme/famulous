@@ -4,10 +4,6 @@ import {
   ACCOUNT_CREATED,
   ACCOUNT_DELETED,
   AnyEvent,
-  AccountCreated,
-  UserCreated,
-  UserModel,
-  AccountDeleted,
   TRANSACTION_CREATED,
 } from "../../domain";
 import { saveUserCreated } from "./saveUserCreated";
@@ -24,69 +20,11 @@ import { saveAccountCreated } from "./saveAccountCreated";
 import { tryCatchNormalize } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { Persist } from "../../domain/Persist";
-import { AccountModel } from "../../domain/AccountModel";
-import { AccountsToUsersModel } from "../entities/AccountsToUsersModel";
 import { InternalError } from "../interfaces/Repository";
 import { saveTransactionCreated } from "./saveTransactionCreated";
 import { saveTransactionModel } from "./saveTransactionModel";
-
-const saveUserModel = ({ knex }: Dependencies) => (event: UserCreated) => {
-  return pipe(
-    tryCatchNormalize(() =>
-      knex<UserModel>("user")
-        .insert({
-          id: event.aggregate.id,
-          email: event.payload.email,
-          password: event.payload.password,
-          salt: event.payload.salt,
-          state: "active",
-        })
-        .then((x) => {
-          console.log("inserted users: " + JSON.stringify(x));
-        })
-    ),
-    mapLeft(InternalError),
-    map(constVoid)
-  );
-};
-
-const saveAccountModel = ({ knex }: Dependencies) => (
-  event: AccountCreated | AccountDeleted
-) => {
-  switch (event.type) {
-    case ACCOUNT_CREATED:
-      return pipe(
-        tryCatchNormalize(() =>
-          knex<AccountModel>("account")
-            .insert({
-              id: event.aggregate.id,
-              balance: 0,
-              currency: event.payload.currency,
-              name: event.payload.name,
-              state: "opened",
-            })
-            .then((x) => console.log("inserted accounts: " + JSON.stringify(x)))
-            .then(() =>
-              knex<AccountsToUsersModel>("accounts_to_users").insert({
-                account_id: event.aggregate.id,
-                user_id: event.payload.userId,
-              })
-            )
-            .then((x) => console.log("bound accounts: " + JSON.stringify(x)))
-        ),
-        mapLeft(InternalError),
-        map(constVoid)
-      );
-    case ACCOUNT_DELETED:
-      return pipe(
-        tryCatchNormalize(() =>
-          knex<AccountModel>("account").delete(event.aggregate.id)
-        ),
-        mapLeft(InternalError),
-        map(constVoid)
-      );
-  }
-};
+import { saveUserModel } from "./saveUserModel";
+import { saveAccountModel } from "./saveAccountModel";
 
 export const _persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
