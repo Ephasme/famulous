@@ -1,9 +1,10 @@
 import { KnexPersist } from "../RepositoryPostgres";
 import { AccountCreatedModel } from "../entities/AccountCreatedModel";
-import { InternalError, AccountCreated } from "../../domain";
+import { AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
 import { tryCatchNormalize } from "../FpUtils";
+import { InternalError } from "../interfaces/Repository";
 
 export const saveAccountCreated: KnexPersist<AccountCreated> = ({ knex }) => (
   entity

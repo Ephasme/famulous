@@ -1,9 +1,9 @@
 import { TaskEither } from "fp-ts/lib/TaskEither";
 import { Option } from "fp-ts/lib/Option";
 import { isError } from "util";
-import { AccountModel } from "./AccountModel";
-import { AnyEvent } from ".";
-import { UserModel } from "./user/UserModel";
+import { AccountModel } from "../../domain/AccountModel";
+import { AnyEvent } from "../../domain";
+import { UserModel } from "../../domain/user/UserModel";
 
 export type NotFound = {
   error: Error;
@@ -100,7 +100,7 @@ export interface Repository {
 
   findUserById(id: string): AsyncResult<Option<UserModel>>;
   findUserByEmail(email: string): AsyncResult<Option<UserModel>>;
-  findAllUsers: AsyncResult<UserModel[]>;
+  findAllUsers(): AsyncResult<UserModel[]>;
 
   findAccountById(id: string): AsyncResult<Option<AccountModel>>;
   findAllAccounts(userId: string): AsyncResult<AccountModel[]>;

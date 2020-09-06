@@ -1,13 +1,7 @@
 import { Router } from "express";
 
-import {
-  Repository,
-  ErrorWithStatus,
-  Unauthorized,
-  UserModel,
-} from "../../domain";
 import validator from "../middlewares/validator";
-import Logger from "../interfaces/Logger";
+import Logger from "../../infra/interfaces/Logger";
 import * as P from "./password";
 import { loginSchema } from "./validators";
 import { generatingJwt } from "./jwt";
@@ -15,6 +9,12 @@ import { pipe, flow } from "fp-ts/lib/function";
 import { chain, left, right, TaskEither, bimap } from "fp-ts/lib/TaskEither";
 import { orUnauthorized as orUnauthorizedWith } from "../errorsIfNone";
 import { foldToOk } from "../responseFolders";
+import {
+  Repository,
+  ErrorWithStatus,
+  Unauthorized,
+} from "../../infra/interfaces/Repository";
+import { UserModel } from "../../domain";
 
 const findUser = (email: string) => (repository: Repository) =>
   pipe(

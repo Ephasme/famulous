@@ -8,3 +8,8 @@ export type UserModel = {
   password: string;
   salt: string;
 };
+
+export type UserView = {
+  id: string;
+  email: string;
+};

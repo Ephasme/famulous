@@ -11,6 +11,8 @@ import accountRoutes from "./accounts/routes";
 import securityRoutes from "./security/routes";
 import makePassportMiddleware from "./security/passport";
 import { authenticatorFactory } from "./security/authenticate";
+import { buildCreateUserFlow } from "./users/buildCreateUserFlow";
+import { buildGetAllUsersFlow } from "./users/buildGetAllUsersFlow";
 
 const port = parseInt(process.env.PORT || "3001");
 
@@ -25,17 +27,24 @@ setupDb(logger).then((db) => {
     })
   );
 
-  // Service instanciations
+  // Fundamental service instanciations.
   const repo = new RepositoryPostgres(db, logger);
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
+
+  // User flows injections.
+  const userFlows = {
+    createUserFlow: buildCreateUserFlow(repo, logger),
+    getAllUsersFlow: buildGetAllUsersFlow(repo, logger),
+  };
+
   if (process.env.NODE_ENV === "production") {
     logger.info("Application started in production mode.");
     app.use(express.static(path.join(__dirname, "../../client/build")));
   }
 
   app.use("/api/v1/login", securityRoutes(repo, logger));
-  app.use("/api/v1/users", userRoutes(repo, logger, auth));
+  app.use("/api/v1/users", userRoutes(auth, userFlows));
   app.use("/api/v1/accounts", accountRoutes(repo, auth));
 
   app.listen(port, () => logger.info(`App started on port ${port}`));

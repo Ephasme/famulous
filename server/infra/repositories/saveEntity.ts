@@ -1,7 +1,6 @@
 import { KnexPersistAny, Dependencies } from "../RepositoryPostgres";
 import {
   USER_CREATED,
-  InternalError,
   ACCOUNT_CREATED,
   ACCOUNT_DELETED,
   AnyEvent,
@@ -25,8 +24,8 @@ import { tryCatchNormalize } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { Persist } from "../../domain/Persist";
 import { AccountModel } from "../../domain/AccountModel";
-import * as uuid from "uuid";
 import { AccountsToUsersModel } from "../entities/AccountsToUsersModel";
+import { InternalError } from "../interfaces/Repository";
 
 const saveUserModel = ({ knex }: Dependencies) => (event: UserCreated) => {
   return pipe(

@@ -1,6 +1,5 @@
 // Lib
 export * from "./WithT";
-export * from "./Repository";
 
 // Root exports
 export * from "./AnyEvent";

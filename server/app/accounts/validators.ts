@@ -11,16 +11,18 @@ import {
   fromOption,
 } from "fp-ts/lib/TaskEither";
 import {
-  UnprocessableEntity,
-  Repository,
-  Forbidden,
-  NotFound,
   AccountCreated,
   accountCreated,
   AccountDeleted,
   accountDeleted,
 } from "../../domain";
 import { uuid } from "../helpers/validators";
+import {
+  Repository,
+  UnprocessableEntity,
+  Forbidden,
+  NotFound,
+} from "../../infra/interfaces/Repository";
 
 const deleteAccountCommandValidator = D.type({
   id: uuid,

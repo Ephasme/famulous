@@ -1,13 +1,16 @@
-import { Repository } from "../../domain";
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
-import { logErrors } from "../logErrors";
 import * as A from "fp-ts/lib/Array";
-import Logger from "../interfaces/Logger";
+import Logger from "../../infra/interfaces/Logger";
+import { logErrors } from "../helpers/logging";
+import { Repository } from "../../infra/interfaces/Repository";
 
-export const buildGetAllUsersFlow = (repository: Repository, logger: Logger) =>
+export const buildGetAllUsersFlow = (
+  repository: Repository,
+  logger: Logger
+) => () =>
   pipe(
-    repository.findAllUsers,
+    repository.findAllUsers(),
     TE.map((users) =>
       pipe(
         users,

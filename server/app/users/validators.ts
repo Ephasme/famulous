@@ -1,11 +1,15 @@
 import * as D from "io-ts/Decoder";
 import * as Joi from "@hapi/joi";
 import { uuid } from "../helpers/validators";
-import { Repository, UnprocessableEntity, Forbidden } from "../../domain";
 import { pipe, flow } from "fp-ts/lib/function";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as O from "fp-ts/lib/Option";
+import {
+  Repository,
+  UnprocessableEntity,
+  Forbidden,
+} from "../../infra/interfaces/Repository";
 
 const createUserCommandValidator = D.type({
   id: uuid,

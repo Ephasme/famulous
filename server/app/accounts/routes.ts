@@ -1,7 +1,5 @@
-import { Repository } from "../../domain";
 import { Router } from "express";
 import { Authenticator } from "../security/authenticate";
-
 import { pipe } from "fp-ts/lib/function";
 import {
   Commands,
@@ -11,6 +9,7 @@ import {
 import { map, chain } from "fp-ts/lib/TaskEither";
 import { foldToCreated, foldToUpdated } from "../responseFolders";
 import { UserModel } from "../../infra/entities/UserModel";
+import { Repository } from "../../infra/interfaces/Repository";
 
 export default (repository: Repository, auth: Authenticator): Router => {
   const router = Router();

@@ -1,33 +1,29 @@
 import { Router, Request, Response } from "express";
-import { Repository } from "../../domain";
-import validator from "../middlewares/validator";
-import { createUserSchema } from "./validators";
-import Logger from "../interfaces/Logger";
+import { UserView } from "../../domain";
 import { pipe } from "fp-ts/lib/function";
 import { foldToCreated, foldToOk } from "../responseFolders";
-import { buildCreateUserFlow } from "./buildCreateUserFlow";
-import { buildGetAllUsersFlow } from "./buildGetAllUsersFlow";
 import { Authenticator } from "../security/authenticate";
+import { CreateUserCommand } from "./validators";
+import { AsyncResult } from "../../infra/interfaces/Repository";
+
+export type UserRouteDependencies = {
+  createUserFlow: (cmd: CreateUserCommand) => AsyncResult<void>;
+  getAllUsersFlow: () => AsyncResult<UserView[]>;
+};
 
 export default (
-  repository: Repository,
-  logger: Logger,
-  authenticate: Authenticator
+  authenticate: Authenticator,
+  deps: UserRouteDependencies
 ): Router => {
   const router = Router();
 
-  const createUserFlow = buildCreateUserFlow(repository, logger);
-  const createUserTask = (req: Request, res: Response) =>
-    pipe(
-      createUserFlow(req.body.id, req.body.email, req.body.password),
-      foldToCreated(res)
-    )();
-  router.post("/", validator(createUserSchema, logger), createUserTask);
+  router.post("/", (req: Request, res: Response) =>
+    pipe(req.body, deps.createUserFlow, foldToCreated(res))()
+  );
 
-  const getAllUsersFlow = buildGetAllUsersFlow(repository, logger);
-  const getAllUsersTask = (_: Request, res: Response) =>
-    pipe(getAllUsersFlow, foldToOk(res))();
-  router.get("/", authenticate, getAllUsersTask);
+  router.get("/", authenticate, (_: Request, res: Response) =>
+    pipe({}, deps.getAllUsersFlow, foldToOk(res))()
+  );
 
   return router;
 };

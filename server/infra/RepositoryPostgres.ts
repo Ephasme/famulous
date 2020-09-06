@@ -1,12 +1,5 @@
-import {
-  Repository,
-  InternalError,
-  AnyEvent,
-  AsyncResult,
-  UserModel,
-} from "../domain";
 import Knex = require("knex");
-import Logger from "../app/interfaces/Logger";
+import Logger from "./interfaces/Logger";
 import { persist } from "./repositories/saveEntity";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
@@ -15,6 +8,8 @@ import { tryCatchNormalize } from "./FpUtils";
 import { AccountModel } from "../domain/AccountModel";
 import { Persist, PersistAny } from "../domain/Persist";
 import { AccountsToUsersModel } from "./entities/AccountsToUsersModel";
+import { AnyEvent, UserModel } from "../domain";
+import { Repository, InternalError } from "./interfaces/Repository";
 
 export type UserFindParameters = Partial<{
   id: string;
@@ -55,10 +50,11 @@ export class RepositoryPostgres implements Repository {
       map(A.head)
     );
 
-  findAllUsers: AsyncResult<UserModel[]> = pipe(
-    tryCatchNormalize(() => this.knex<UserModel>("user")),
-    mapLeft(InternalError)
-  );
+  findAllUsers = () =>
+    pipe(
+      tryCatchNormalize(() => this.knex<UserModel>("user")),
+      mapLeft(InternalError)
+    );
 
   findAccountById = (id: string) =>
     pipe(

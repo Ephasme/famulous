@@ -1,8 +1,8 @@
 import { Response } from "express";
-import { ErrorWithStatus } from "../domain";
 import { fold } from "fp-ts/lib/TaskEither";
 import { identity, constVoid } from "fp-ts/lib/function";
 import * as T from "fp-ts/lib/Task";
+import { ErrorWithStatus } from "../infra/interfaces/Repository";
 
 const foldToResponse = <Result, T>(code: number, fn: (r: Result) => T) => (
   res: Response
