@@ -14,13 +14,13 @@ import { UserModel } from "../../domain";
 export default (repository: Repository, auth: Authenticator): Router => {
   const router = Router();
 
-  router.delete("/", auth, (req, res) => {
+  router.delete("/:id", auth, (req, res) => {
     return pipe(
-      validateDeleteAccountCommand(repository)(req.body),
+      validateDeleteAccountCommand(repository)({ id: req.params.id }),
       map(Commands.deleteToEvent),
       chain(repository.persist),
       foldToUpdated(res)
-    );
+    )();
   });
 
   router.post("/", auth, (req, res) => {

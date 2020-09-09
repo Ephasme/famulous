@@ -11,19 +11,15 @@ export const saveAccountCreated: KnexPersist<AccountCreated> = ({ knex }) => (
 ) =>
   pipe(
     tryCatchNormalize(() =>
-      knex<AccountCreatedModel>("account_events")
-        .insert({
-          id: entity.id,
-          type: entity.type,
-          aggregate_id: entity.aggregate.id,
-          aggregate_type: entity.aggregate.type,
-          created_currency: entity.payload.currency,
-          created_name: entity.payload.name,
-          created_user_id: entity.payload.userId,
-        })
-        .then((x) =>
-          console.log("inserted account events: " + JSON.stringify(x))
-        )
+      knex<AccountCreatedModel>("account_events").insert({
+        id: entity.id,
+        type: entity.type,
+        aggregate_id: entity.aggregate.id,
+        aggregate_type: entity.aggregate.type,
+        created_currency: entity.payload.currency,
+        created_name: entity.payload.name,
+        created_user_id: entity.payload.userId,
+      })
     ),
     mapLeft(InternalError),
     map(constVoid)

@@ -27,7 +27,6 @@ import { saveAccountModel } from "./saveAccountModel";
 import { InternalError } from "../../domain/interfaces";
 
 const _persist: KnexPersistAny = (deps) => (entity) => {
-  console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
   switch (entity.type) {
     case ACCOUNT_CREATED:
       return pipe(

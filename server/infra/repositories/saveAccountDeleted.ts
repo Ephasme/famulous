@@ -11,16 +11,12 @@ export const saveAccountDeleted: KnexPersist<AccountDeleted> = ({ knex }) => (
 ) =>
   pipe(
     tryCatchNormalize(() =>
-      knex<AccountDeletedModel>("account_events")
-        .insert({
-          id: entity.id,
-          type: entity.type,
-          aggregate_id: entity.aggregate.id,
-          aggregate_type: entity.aggregate.type,
-        })
-        .then((x) =>
-          console.log("inserted account events: " + JSON.stringify(x))
-        )
+      knex<AccountDeletedModel>("account_events").insert({
+        id: entity.id,
+        type: entity.type,
+        aggregate_id: entity.aggregate.id,
+        aggregate_type: entity.aggregate.type,
+      })
     ),
     mapLeft(InternalError),
     map(constVoid)
