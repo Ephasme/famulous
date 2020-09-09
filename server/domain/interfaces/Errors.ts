@@ -1,9 +1,4 @@
-import { TaskEither } from "fp-ts/lib/TaskEither";
-import { Option } from "fp-ts/lib/Option";
 import { isError } from "util";
-import { AccountModel } from "../../domain/AccountModel";
-import { AnyEvent } from "../../domain";
-import { UserModel } from "../../domain/user/UserModel";
 
 export type NotFound = {
   error: Error;
@@ -92,16 +87,3 @@ export type ErrorWithStatus =
   | Forbidden
   | UnprocessableEntity
   | Unauthorized;
-
-export type AsyncResult<T> = TaskEither<ErrorWithStatus, T>;
-
-export interface Repository {
-  persist(...events: AnyEvent[]): AsyncResult<void>;
-
-  findUserById(id: string): AsyncResult<Option<UserModel>>;
-  findUserByEmail(email: string): AsyncResult<Option<UserModel>>;
-  findAllUsers(): AsyncResult<UserModel[]>;
-
-  findAccountById(id: string): AsyncResult<Option<AccountModel>>;
-  findAllAccounts(userId: string): AsyncResult<AccountModel[]>;
-}

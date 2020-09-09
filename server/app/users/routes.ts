@@ -4,7 +4,7 @@ import { pipe } from "fp-ts/lib/function";
 import { foldToCreated, foldToOk } from "../responseFolders";
 import { Authenticator } from "../security/authenticate";
 import { CreateUserCommand } from "./validators";
-import { AsyncResult } from "../../infra/interfaces/Repository";
+import { AsyncResult } from "../../domain/interfaces/Repository";
 
 export type UserRouteDependencies = {
   createUserFlow: (cmd: CreateUserCommand) => AsyncResult<void>;

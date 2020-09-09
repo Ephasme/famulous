@@ -20,13 +20,13 @@ import { saveAccountCreated } from "./saveAccountCreated";
 import { tryCatchNormalize } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { Persist } from "../../domain/Persist";
-import { InternalError } from "../interfaces/Repository";
 import { saveTransactionCreated } from "./saveTransactionCreated";
 import { saveTransactionModel } from "./saveTransactionModel";
 import { saveUserModel } from "./saveUserModel";
 import { saveAccountModel } from "./saveAccountModel";
+import { InternalError } from "../../domain/interfaces";
 
-export const _persist: KnexPersistAny = (deps) => (entity) => {
+const _persist: KnexPersistAny = (deps) => (entity) => {
   console.log(`trying to save ${JSON.stringify(entity, null, 4)}`);
   switch (entity.type) {
     case ACCOUNT_CREATED:

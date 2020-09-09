@@ -3,7 +3,7 @@ import {
   ErrorWithStatus,
   Unauthorized,
   InternalError,
-} from "../infra/interfaces/Repository";
+} from "../domain/interfaces";
 
 const orError = (fn: (_: string) => ErrorWithStatus) => (message: string) =>
   fromOption(() => fn(message));

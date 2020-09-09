@@ -9,7 +9,7 @@ import {
   Repository,
   UnprocessableEntity,
   Forbidden,
-} from "../../infra/interfaces/Repository";
+} from "../../domain/interfaces";
 
 const createUserCommandValidator = D.type({
   id: uuid,

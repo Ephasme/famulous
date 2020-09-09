@@ -22,7 +22,7 @@ import {
   UnprocessableEntity,
   Forbidden,
   NotFound,
-} from "../../infra/interfaces/Repository";
+} from "../../domain/interfaces";
 
 const deleteAccountCommandValidator = D.type({
   id: uuid,

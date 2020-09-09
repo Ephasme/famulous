@@ -4,7 +4,7 @@ import { AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
 import { tryCatchNormalize } from "../FpUtils";
-import { InternalError } from "../interfaces/Repository";
+import { InternalError } from "../../domain/interfaces";
 
 export const saveAccountCreated: KnexPersist<AccountCreated> = ({ knex }) => (
   entity

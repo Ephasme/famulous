@@ -5,7 +5,7 @@ import { Authenticator } from "../security/authenticate";
 import { pipe } from "fp-ts/lib/function";
 import { validateCreateTransactionCommand } from "./validators";
 import { map, chain, fromEither } from "fp-ts/lib/TaskEither";
-import { Repository } from "../../infra/interfaces/Repository";
+import { Repository } from "../../domain/interfaces";
 import { foldToCreated } from "../responseFolders";
 
 export default (repository: Repository, auth: Authenticator): Router => {
