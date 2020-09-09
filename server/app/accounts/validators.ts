@@ -21,6 +21,10 @@ const deleteAccountCommandValidator = D.type({
   id: uuid,
 });
 
+const getAccountCommandValidator = D.type({
+  id: uuid,
+});
+
 const createAccountCommandValidator = D.type({
   id: uuid,
   user_id: uuid,
@@ -82,4 +86,19 @@ export const validateDeleteAccountCommand = (repository: Repository) =>
         TE.map(constant(command))
       )
     )
+  );
+
+export const validateGetAccountCommand = (repository: Repository) =>
+  flow(
+    getAccountCommandValidator.decode,
+    E.mapLeft(flow(D.draw, UnprocessableEntity)),
+    TE.fromEither,
+    TE.chain((command) => {
+      console.log({ command });
+      return pipe(
+        repository.findAccountById(command.id),
+        TE.chain(TE.fromOption(() => NotFound("unexisting account"))),
+        TE.map(constant(command))
+      );
+    })
   );

@@ -54,12 +54,14 @@ export class RepositoryPostgres implements Repository {
       mapLeft(InternalError)
     );
 
-  findAccountById = (id: string) =>
-    pipe(
+  findAccountById = (id: string) => {
+    console.log("tototo");
+    return pipe(
       tryCatchNormalize(() => this.knex<AccountModel>("account").where({ id })),
       mapLeft(InternalError),
       map(A.head)
     );
+  };
 
   findAllAccounts = (userId: string) =>
     pipe(

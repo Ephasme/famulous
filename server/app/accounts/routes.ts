@@ -5,6 +5,7 @@ import {
   Commands,
   validateCreateAccountCommand,
   validateDeleteAccountCommand,
+  validateGetAccountCommand,
 } from "./validators";
 import { map, chain } from "fp-ts/lib/TaskEither";
 import { foldToCreated, foldToUpdated } from "../responseFolders";
@@ -45,6 +46,15 @@ export default (repository: Repository, auth: Authenticator): Router => {
     } else {
       res.status(500); // TODO: functional programming
     }
+  });
+
+  router.get("/:id", auth, (req, res) => {
+    return pipe(
+      validateGetAccountCommand(repository)({ id: req.params.id }),
+      map(Commands.deleteToEvent),
+      chain(repository.persist),
+      foldToUpdated(res)
+    );
   });
 
   return router;
