@@ -1,8 +1,8 @@
 import * as D from "io-ts/lib/Decoder";
 import { flow } from "fp-ts/lib/function";
 import { mapLeft } from "fp-ts/lib/Either";
-import { UnprocessableEntity } from "../../domain";
 import { uuid } from "../helpers/validators";
+import { UnprocessableEntity } from "../../infra/interfaces/Repository";
 
 const createTransactionCommandValidator = D.type({
   id: uuid,

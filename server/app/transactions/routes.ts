@@ -1,12 +1,12 @@
-import { Repository, transactionCreated, InternalError } from "../../domain";
+import { transactionCreated } from "../../domain";
 import { Router } from "express";
 import { Authenticator } from "../security/authenticate";
 
-import Logger from "../interfaces/Logger";
 import { pipe } from "fp-ts/lib/function";
 import { validateCreateTransactionCommand } from "./validators";
 import { map, chain, fromEither } from "fp-ts/lib/TaskEither";
-import { foldToResponse } from "../foldToResponse";
+import { Repository } from "../../infra/interfaces/Repository";
+import { foldToCreated } from "../responseFolders";
 
 export default (repository: Repository, auth: Authenticator): Router => {
   const router = Router();
@@ -23,8 +23,8 @@ export default (repository: Repository, auth: Authenticator): Router => {
       map((command) =>
         transactionCreated(command.id, command.account_id, command.targets)
       ),
-      chain(repository.saveAll),
-      foldToResponse(res)
+      chain(repository.persist),
+      foldToCreated(res)
     )();
   });
 

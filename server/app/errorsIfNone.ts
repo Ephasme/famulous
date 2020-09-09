@@ -1,5 +1,9 @@
-import { Unauthorized, InternalError, ErrorWithStatus } from "../domain";
 import { fromOption } from "fp-ts/lib/TaskEither";
+import {
+  ErrorWithStatus,
+  Unauthorized,
+  InternalError,
+} from "../infra/interfaces/Repository";
 
 const orError = (fn: (_: string) => ErrorWithStatus) => (message: string) =>
   fromOption(() => fn(message));

@@ -2,11 +2,11 @@ import { Express } from "express";
 import * as passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 
-import { Repository, ACTIVE_USER, EMPTY_USER, NotFound } from "../../domain";
-import Logger from "../interfaces/Logger";
-import { chain, right, left, fold } from "fp-ts/lib/TaskEither";
+import Logger from "../../infra/interfaces/Logger";
+import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import { task } from "fp-ts/lib/Task";
+import { Repository, NotFound } from "../../infra/interfaces/Repository";
 
 const makePassportMiddleware = (
   app: Express,
@@ -24,17 +24,14 @@ const makePassportMiddleware = (
     new JwtStrategy(opts, (jwtPayload, done) =>
       pipe(
         repository.findUserById(jwtPayload.id),
-        chain((user) => {
-          if (user.type === EMPTY_USER) {
-            return left(NotFound("User not found during authentication"));
-          } else if (user.type !== ACTIVE_USER) {
-            return left(NotFound("Try to authenticate with an inactive user"));
-          } else {
-            logger.info(`Succesful authentication: ${user.email}`);
-            return right(user);
-          }
+        TE.chain(
+          TE.fromOption(() => NotFound("User not found during authentication"))
+        ),
+        TE.map((u) => {
+          logger.info(`Successful authentication: ${u.email}`);
+          return u;
         }),
-        fold(
+        TE.fold(
           (err) => task.of(done(err.error, false)),
           (user) => task.of(done(null, user))
         )

@@ -1,10 +1,11 @@
 import { KnexPersist } from "../RepositoryPostgres";
 import { TransactionModel } from "../entities/TransactionModel";
 import { TransactionToTargetModel } from "../entities/TransactionToTargetModel";
-import { InternalError, TransactionCreated } from "../../domain";
+import { TransactionCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
 import { tryCatchNormalize } from "../FpUtils";
+import { InternalError } from "../interfaces/Repository";
 
 export const saveTransactionModel: KnexPersist<TransactionCreated> = ({
   knex,
