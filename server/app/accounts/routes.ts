@@ -7,9 +7,9 @@ import {
   validateDeleteAccountCommand,
   validateGetAccountCommand,
 } from "./validators";
-import { map, chain } from "fp-ts/lib/TaskEither";
-import { foldToCreated, foldToUpdated } from "../responseFolders";
-import { Repository } from "../../domain/interfaces";
+import * as TE from "fp-ts/lib/TaskEither";
+import { foldToCreated, foldToUpdated, foldToOk } from "../responseFolders";
+import { Repository, NotFound } from "../../domain/interfaces";
 import { UserModel } from "../../domain";
 
 export default (repository: Repository, auth: Authenticator): Router => {
@@ -18,8 +18,8 @@ export default (repository: Repository, auth: Authenticator): Router => {
   router.delete("/:id", auth, (req, res) => {
     return pipe(
       validateDeleteAccountCommand(repository)({ id: req.params.id }),
-      map(Commands.deleteToEvent),
-      chain(repository.persist),
+      TE.map(Commands.deleteToEvent),
+      TE.chain(repository.persist),
       foldToUpdated(res)
     )();
   });
@@ -27,8 +27,8 @@ export default (repository: Repository, auth: Authenticator): Router => {
   router.post("/", auth, (req, res) => {
     return pipe(
       validateCreateAccountCommand(repository)(req.body),
-      map(Commands.createToEvent),
-      chain(repository.persist),
+      TE.map(Commands.createToEvent),
+      TE.chain(repository.persist),
       foldToCreated(res)
     )();
   });
@@ -50,11 +50,11 @@ export default (repository: Repository, auth: Authenticator): Router => {
 
   router.get("/:id", auth, (req, res) => {
     return pipe(
-      validateGetAccountCommand(repository)({ id: req.params.id }),
-      map(Commands.deleteToEvent),
-      chain(repository.persist),
-      foldToUpdated(res)
-    );
+      validateGetAccountCommand({ id: req.params.id }),
+      TE.chain(({ id }) => repository.findAccountById(id)),
+      TE.chain(TE.fromOption(() => NotFound("unexisting account"))),
+      foldToOk(res)
+    )();
   });
 
   return router;

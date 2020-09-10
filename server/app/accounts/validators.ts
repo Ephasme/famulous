@@ -88,17 +88,8 @@ export const validateDeleteAccountCommand = (repository: Repository) =>
     )
   );
 
-export const validateGetAccountCommand = (repository: Repository) =>
-  flow(
-    getAccountCommandValidator.decode,
-    E.mapLeft(flow(D.draw, UnprocessableEntity)),
-    TE.fromEither,
-    TE.chain((command) => {
-      console.log({ command });
-      return pipe(
-        repository.findAccountById(command.id),
-        TE.chain(TE.fromOption(() => NotFound("unexisting account"))),
-        TE.map(constant(command))
-      );
-    })
-  );
+export const validateGetAccountCommand = flow(
+  getAccountCommandValidator.decode,
+  E.mapLeft(flow(D.draw, UnprocessableEntity)),
+  TE.fromEither
+);

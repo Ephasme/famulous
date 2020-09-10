@@ -10,7 +10,7 @@ import {
 export const TRANSACTION_CREATED = "transaction.created";
 export type TransactionCreatedType = typeof TRANSACTION_CREATED;
 
-interface AccountTarget {
+export interface AccountTarget {
   account_id: string;
   amount: number;
 }

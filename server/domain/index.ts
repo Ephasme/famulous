@@ -13,6 +13,7 @@ export * from "./user/events/UserEvent";
 
 // ACCOUNT
 export * from "./account/AccountModel";
+export * from "./account/AccountWithTransactionsModel";
 // Exporting events
 export * from "./account/events/AccountCreated";
 export * from "./account/events/AccountDeleted";

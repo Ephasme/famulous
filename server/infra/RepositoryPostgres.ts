@@ -1,13 +1,19 @@
 import Knex = require("knex");
 import { persist } from "./repositories/saveEntity";
-import { mapLeft, map } from "fp-ts/lib/TaskEither";
+import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import * as A from "fp-ts/lib/Array";
 import { tryCatchNormalize } from "./FpUtils";
 import { Persist, PersistAny } from "../domain/Persist";
 import { AccountsToUsersModel } from "./entities/AccountsToUsersModel";
-import { AnyEvent, UserModel, AccountModel } from "../domain";
+import {
+  AnyEvent,
+  UserModel,
+  AccountModel,
+  AccountWithTransactionsModel,
+} from "../domain";
 import { Repository, InternalError, Logger } from "../domain/interfaces";
+import { FindAccountByIdRawResult } from "./entities/FindAccountByIdRawResult";
 
 export type UserFindParameters = Partial<{
   id: string;
@@ -37,31 +43,92 @@ export class RepositoryPostgres implements Repository {
   findUserById = (id: string) =>
     pipe(
       tryCatchNormalize(() => this.knex<UserModel>("user").where({ id })),
-      mapLeft(InternalError),
-      map(A.head)
+      TE.mapLeft(InternalError),
+      TE.map(A.head)
     );
 
   findUserByEmail = (email: string) =>
     pipe(
       tryCatchNormalize(() => this.knex<UserModel>("user").where({ email })),
-      mapLeft(InternalError),
-      map(A.head)
+      TE.mapLeft(InternalError),
+      TE.map(A.head)
     );
 
   findAllUsers = () =>
     pipe(
       tryCatchNormalize(() => this.knex<UserModel>("user")),
-      mapLeft(InternalError)
+      TE.mapLeft(InternalError)
     );
 
-  findAccountById = (id: string) => {
-    console.log("tototo");
-    return pipe(
-      tryCatchNormalize(() => this.knex<AccountModel>("account").where({ id })),
-      mapLeft(InternalError),
-      map(A.head)
+  findAccountById = (id: string) =>
+    pipe(
+      tryCatchNormalize(() =>
+        this.knex("account")
+          .innerJoin("transactions", "transaction.account_id", "account.id")
+          .innerJoin(
+            "transaction_to_target",
+            "transaction_to_target.transaction_id",
+            "transaction.id"
+          )
+          .select<FindAccountByIdRawResult[]>(
+            "account.*",
+            "transaction.id",
+            "transaction_to_target.transaction_id",
+            "transaction_to_target.account_id",
+            "transaction_to_target.amount"
+          )
+          .where({ "account.id": id })
+      ),
+      TE.mapLeft(InternalError),
+      // TODO: check results[0] exists
+      TE.map((results) =>
+        // TODO: reduce transactions then reduce account
+        A.array.reduce<FindAccountByIdRawResult, AccountWithTransactionsModel>(
+          results,
+          {
+            id: results[0]["account.id"],
+            state: results[0]["account.state"],
+            name: results[0]["account.name"],
+            balance: results[0]["account.balance"],
+            currency: results[0]["account.currency"],
+            transactions: [],
+          },
+          (
+            accumulator: AccountWithTransactionsModel,
+            row
+          ): AccountWithTransactionsModel => {
+            // TODO: use Option
+            const transaction = accumulator.transactions.find(
+              (transac) => transac.id === row["transaction.id"]
+            );
+            const newTarget = {
+              account_id: row["transaction_to_target.account_id"],
+              amount: row["transaction_to_target.amount"],
+            };
+
+            let newTransaction;
+            if (!transaction) {
+              newTransaction = {
+                id: row["transaction.id"],
+                targets: [newTarget],
+              };
+            } else {
+              newTransaction = {
+                id: transaction.id,
+                targets: [...transaction.targets, newTarget],
+              };
+            }
+
+            const newValue = {
+              ...accumulator,
+              transactions: [...accumulator.transactions, {}],
+            };
+
+            return newValue;
+          }
+        )
+      )
     );
-  };
 
   findAllAccounts = (userId: string) =>
     pipe(
@@ -72,6 +139,6 @@ export class RepositoryPostgres implements Repository {
           .select<AccountModel[]>(["account.*"])
           .where({ "user.id": userId })
       ),
-      mapLeft(InternalError)
+      TE.mapLeft(InternalError)
     );
 }
