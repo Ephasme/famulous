@@ -2,11 +2,10 @@ import { Express } from "express";
 import * as passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 
-import Logger from "../../infra/interfaces/Logger";
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 import { task } from "fp-ts/lib/Task";
-import { Repository, NotFound } from "../../infra/interfaces/Repository";
+import { Logger, Repository, NotFound } from "../../domain/interfaces";
 
 const makePassportMiddleware = (
   app: Express,

@@ -3,7 +3,7 @@ import { UserCreated, UserModel } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { tryCatchNormalize } from "../FpUtils";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
-import { InternalError } from "../interfaces/Repository";
+import { InternalError } from "../../domain/interfaces";
 
 export const saveUserModel = ({ knex }: Dependencies) => (
   event: UserCreated

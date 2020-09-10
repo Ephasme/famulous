@@ -8,8 +8,8 @@ import {
 } from "./validators";
 import { map, chain } from "fp-ts/lib/TaskEither";
 import { foldToCreated, foldToUpdated } from "../responseFolders";
-import { UserModel } from "../../infra/entities/UserModel";
-import { Repository } from "../../infra/interfaces/Repository";
+import { Repository } from "../../domain/interfaces";
+import { UserModel } from "../../domain";
 
 export default (repository: Repository, auth: Authenticator): Router => {
   const router = Router();

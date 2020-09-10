@@ -1,5 +1,5 @@
 import * as Knex from "knex";
-import Logger from "../interfaces/Logger";
+import { Logger } from "../../domain/interfaces";
 
 const instance: Knex | null = null;
 const { DATABASE_URL } = process.env;

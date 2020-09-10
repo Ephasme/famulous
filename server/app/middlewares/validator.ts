@@ -1,6 +1,6 @@
 import * as express from "express";
 import * as Joi from "@hapi/joi";
-import Logger from "../../infra/interfaces/Logger";
+import { Logger } from "../../domain/interfaces";
 
 const makeBodyValidatorMiddleware = (schema: Joi.AnySchema, logger: Logger) => (
   req: express.Request,

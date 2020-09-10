@@ -9,7 +9,9 @@
     "node": "=12.16.3"
   },
   "scripts": {
-    "build": "tsc -b ./server/app/tsconfig.json",
+    "build": "yarn run build:back",
+    "build:back": "tsc -b ./server/app/tsconfig.json",
+    "build:front": "yarn --cwd client build",
     "clean": "./scripts/clean.sh",
     "dev:setup": "docker-compose -f ./server/infra/local/docker-compose.yml up -d",
     "watch-server": "TS_NODE_PROJECT=./server/app/tsconfig.json DEBUG=knex:tx nodemon ./server/app/index.ts",
@@ -20,7 +22,7 @@
     "migrate": "knex migrate:latest",
     "lint": "eslint ./server --ext .ts --fix",
     "postinstall": "yarn --cwd client",
-    "prebuild": "yarn --cwd client build",
+    "prebuild": "yarn run build:front",
     "start": "NODE_ENV=production node ./dist/app/index.js",
     "test": "CI=true yarn dev:test"
   },

@@ -4,15 +4,15 @@ import { UserCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
 import { tryCatchNormalize } from "../FpUtils";
-import { InternalError } from "../interfaces/Repository";
+import { InternalError } from "../../domain/interfaces";
 
 export const saveUserCreated: KnexPersist<UserCreated> = ({ knex }) => (
   entity
 ) =>
   pipe(
-    tryCatchNormalize(() =>
-      knex<UserCreatedModel>("user_events")
-        .insert({
+    tryCatchNormalize(
+      () =>
+        knex<UserCreatedModel>("user_events").insert({
           id: entity.id,
           type: entity.type,
           aggregate_id: entity.aggregate.id,
@@ -20,10 +20,10 @@ export const saveUserCreated: KnexPersist<UserCreated> = ({ knex }) => (
           created_email: entity.payload.email,
           created_password: entity.payload.password,
           created_salt: entity.payload.salt,
-        })
-        .then((x) =>
-          console.log("inserted account events: " + JSON.stringify(x))
-        )
+        }) //TODO: console.log => Logger
+      // .then((x) =>
+      //   console.log("inserted account events: " + JSON.stringify(x))
+      // )
     ),
     mapLeft(InternalError),
     map(constVoid)
