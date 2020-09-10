@@ -27,14 +27,12 @@ export const saveAccountModel = ({ knex }: Dependencies) => (
               name: event.payload.name,
               state: "opened",
             })
-            .then((x) => console.log("inserted accounts: " + JSON.stringify(x)))
             .then(() =>
               knex<AccountsToUsersModel>("accounts_to_users").insert({
                 account_id: event.aggregate.id,
                 user_id: event.payload.userId,
               })
             )
-            .then((x) => console.log("bound accounts: " + JSON.stringify(x)))
         ),
         mapLeft(InternalError),
         map(constVoid)
@@ -42,7 +40,14 @@ export const saveAccountModel = ({ knex }: Dependencies) => (
     case ACCOUNT_DELETED:
       return pipe(
         tryCatchNormalize(() =>
-          knex<AccountModel>("account").delete(event.aggregate.id)
+          knex<AccountsToUsersModel>("accounts_to_users")
+            .where({ account_id: event.aggregate.id })
+            .delete()
+            .then(() =>
+              knex<AccountModel>("account")
+                .where({ id: event.aggregate.id })
+                .delete()
+            )
         ),
         mapLeft(InternalError),
         map(constVoid)

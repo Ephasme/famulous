@@ -1,15 +1,8 @@
 import * as D from "io-ts/lib/Decoder";
 import { pipe, flow, constant } from "fp-ts/lib/function";
-import { mapLeft } from "fp-ts/lib/Either";
+import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
-import {
-  chain,
-  fromEither,
-  right,
-  map,
-  left,
-  fromOption,
-} from "fp-ts/lib/TaskEither";
+import * as TE from "fp-ts/lib/TaskEither";
 import {
   AccountCreated,
   accountCreated,
@@ -60,15 +53,15 @@ export type DeleteAccountCommand = D.TypeOf<
 export const validateCreateAccountCommand = (repository: Repository) =>
   flow(
     createAccountCommandValidator.decode,
-    mapLeft(flow(D.draw, UnprocessableEntity)),
-    fromEither,
-    chain((command) =>
+    E.mapLeft(flow(D.draw, UnprocessableEntity)),
+    TE.fromEither,
+    TE.chain((command) =>
       pipe(
         repository.findAccountById(command.id),
-        chain(
+        TE.chain(
           O.fold(
-            () => right(command),
-            (_) => left(Forbidden(`Account ${command.id} not exists`))
+            () => TE.right(command),
+            (_) => TE.left(Forbidden(`Account ${command.id} not exists`))
           )
         )
       )
@@ -78,13 +71,15 @@ export const validateCreateAccountCommand = (repository: Repository) =>
 export const validateDeleteAccountCommand = (repository: Repository) =>
   flow(
     deleteAccountCommandValidator.decode,
-    mapLeft(flow(D.draw, UnprocessableEntity)),
-    fromEither,
-    chain((command) =>
+    E.mapLeft(flow(D.draw, UnprocessableEntity)),
+    TE.fromEither,
+    TE.chain((command) =>
       pipe(
         repository.findAccountById(command.id),
-        chain(fromOption(() => NotFound("can't delete unexisting account"))),
-        map(constant(command))
+        TE.chain(
+          TE.fromOption(() => NotFound("can't delete unexisting account"))
+        ),
+        TE.map(constant(command))
       )
     )
   );
