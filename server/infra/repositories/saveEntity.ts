@@ -17,7 +17,7 @@ import {
 import * as A from "fp-ts/lib/Array";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { saveAccountCreated } from "./saveAccountCreated";
-import { tryCatchNormalize } from "../FpUtils";
+import { tryCatch } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { Persist } from "../../domain/Persist";
 import { saveTransactionCreated } from "./saveTransactionCreated";
@@ -27,7 +27,7 @@ import { saveAccountModel } from "./saveAccountModel";
 import { InternalError } from "../../domain/interfaces";
 
 const _persist: KnexPersistAny = (deps) => (entity) => {
-  switch (entity.type) {
+  switch (entity.event_type) {
     case ACCOUNT_CREATED:
       return pipe(
         saveAccountCreated(deps)(entity),
@@ -57,7 +57,7 @@ export const persist: (deps: Dependencies) => Persist<AnyEvent> = (deps) => (
   ...entities
 ) =>
   pipe(
-    tryCatchNormalize(() =>
+    tryCatch(() =>
       // This returns a Promise that we need to catch and normalize.
       // Errors that arise here are problems while opening transaction.
       // Errors in 'persist' are turned into either.

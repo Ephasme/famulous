@@ -4,14 +4,14 @@ import { TransactionToTargetModel } from "../entities/TransactionToTargetModel";
 import { TransactionCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
-import { tryCatchNormalize } from "../FpUtils";
+import { tryCatch } from "../FpUtils";
 import { InternalError } from "../../domain/interfaces";
 
 export const saveTransactionModel: KnexPersist<TransactionCreated> = ({
   knex,
 }) => (entity) =>
   pipe(
-    tryCatchNormalize(async () => {
+    tryCatch(async () => {
       await knex<TransactionModel>("transaction").insert({
         id: entity.id,
         account_id: entity.payload.account_id,

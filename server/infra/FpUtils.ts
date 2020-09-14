@@ -1,9 +1,13 @@
-import { isError, isString } from "util";
-import { tryCatch } from "fp-ts/lib/TaskEither";
+import { types } from "util";
+import * as TE from "fp-ts/lib/TaskEither";
 
-export const normalizeError: (e: unknown) => Error = (e) =>
-  isError(e) ? e : isString(e) ? new Error(e) : new Error("badly typed error");
+export const normalizeError: (e: unknown) => Error = (error) =>
+  types.isNativeError(error)
+    ? error
+    : typeof error === "string"
+    ? new Error(error)
+    : new Error(`badly typed error: ${JSON.stringify(error)}`);
 
-export function tryCatchNormalize<L>(task: () => Promise<L>) {
-  return tryCatch(task, normalizeError);
+export function tryCatch<L>(task: () => Promise<L>) {
+  return TE.tryCatch(task, normalizeError);
 }

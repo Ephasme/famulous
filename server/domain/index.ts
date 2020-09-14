@@ -3,12 +3,14 @@ export * from "./WithT";
 
 // Root exports
 export * from "./AnyEvent";
+export * from "./BaseEvent";
 export * from "./AggregateEvent";
 
 // USER
 export * from "./user/UserModel";
 // Exporting events
 export * from "./user/events/UserCreated";
+export * from "./user/events/UserDeleted";
 export * from "./user/events/UserEvent";
 
 // ACCOUNT

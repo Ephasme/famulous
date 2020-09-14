@@ -2,22 +2,16 @@ import { KnexPersist } from "../RepositoryPostgres";
 import { AccountDeletedModel } from "../entities/AccountDeletedModel";
 import { AccountDeleted } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
-import { tryCatchNormalize } from "../FpUtils";
+import { tryCatch } from "../FpUtils";
 import { map, mapLeft } from "fp-ts/lib/TaskEither";
 import { InternalError } from "../../domain/interfaces";
+import * as dao from "../orm/entities/events/AccountDeleted";
 
-export const saveAccountDeleted: KnexPersist<AccountDeleted> = ({ knex }) => (
-  entity
+export const saveAccountDeleted: KnexPersist<AccountDeleted> = ({ em }) => (
+  event
 ) =>
   pipe(
-    tryCatchNormalize(() =>
-      knex<AccountDeletedModel>("account_events").insert({
-        id: entity.id,
-        type: entity.type,
-        aggregate_id: entity.aggregate.id,
-        aggregate_type: entity.aggregate.type,
-      })
-    ),
+    tryCatch(() => em.save(dao.AccountDeleted.from(event))),
     mapLeft(InternalError),
     map(constVoid)
   );

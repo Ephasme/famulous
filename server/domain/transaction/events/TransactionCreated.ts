@@ -6,25 +6,28 @@ import {
   TransactionType,
   With,
 } from "../..";
+import { AbstractTransactionEvent } from "./TransactionEvent";
 
 export const TRANSACTION_CREATED = "transaction.created";
 export type TransactionCreatedType = typeof TRANSACTION_CREATED;
 
 interface AccountTarget {
-  account_id: string;
-  amount: number;
+  readonly account_id: string;
+  readonly amount: number;
 }
 
 interface Payload {
-  account_id: string;
-  targets: AccountTarget[];
+  readonly account_id: string;
+  readonly targets: AccountTarget[];
 }
 
 export interface TransactionCreated
   extends TransactionEvent<TransactionCreatedType>,
     With<Payload> {}
 
-class TransactionCreatedImpl implements TransactionCreated {
+class TransactionCreatedImpl
+  extends AbstractTransactionEvent<TransactionCreatedType>
+  implements TransactionCreated {
   static make(
     id: string,
     accountId: string,
@@ -40,12 +43,14 @@ class TransactionCreatedImpl implements TransactionCreated {
   }
 
   private constructor(
-    readonly id: string,
-    readonly type: TransactionCreatedType,
-    readonly aggregate: AggregateInfo<TransactionType>,
-    readonly createdAt: number,
-    readonly payload: Payload
-  ) {}
+    id: string,
+    event_type: TransactionCreatedType,
+    aggregate: AggregateInfo<TransactionType>,
+    createdAt: number,
+    public readonly payload: Payload
+  ) {
+    super(id, event_type, aggregate, createdAt);
+  }
 }
 
 export const transactionCreated = TransactionCreatedImpl.make;

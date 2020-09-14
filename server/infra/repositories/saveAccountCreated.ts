@@ -1,26 +1,16 @@
 import { KnexPersist } from "../RepositoryPostgres";
-import { AccountCreatedModel } from "../entities/AccountCreatedModel";
 import { AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { mapLeft, map } from "fp-ts/lib/TaskEither";
-import { tryCatchNormalize } from "../FpUtils";
+import { tryCatch } from "../FpUtils";
 import { InternalError } from "../../domain/interfaces";
+import * as dao from "../orm/entities/events/AccountCreated";
 
-export const saveAccountCreated: KnexPersist<AccountCreated> = ({ knex }) => (
-  entity
+export const saveAccountCreated: KnexPersist<AccountCreated> = ({ em }) => (
+  event
 ) =>
   pipe(
-    tryCatchNormalize(() =>
-      knex<AccountCreatedModel>("account_events").insert({
-        id: entity.id,
-        type: entity.type,
-        aggregate_id: entity.aggregate.id,
-        aggregate_type: entity.aggregate.type,
-        created_currency: entity.payload.currency,
-        created_name: entity.payload.name,
-        created_user_id: entity.payload.userId,
-      })
-    ),
+    tryCatch(() => em.save(dao.AccountCreated.from(event))),
     mapLeft(InternalError),
     map(constVoid)
   );

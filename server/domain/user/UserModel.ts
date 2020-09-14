@@ -1,9 +1,11 @@
 export const USER = "user";
 export type UserType = typeof USER;
 
+export type UserStates = "created" | "active" | "deleted" | "inactive";
+
 export type UserModel = {
   id: string;
-  state: "active" | "inactive";
+  state: UserStates;
   email: string;
   password: string;
   salt: string;

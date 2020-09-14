@@ -1,7 +1,17 @@
-export type AggregateInfo<Type> = { id: string; type: Type };
-export interface AggregateEvent<EventType, AggregateType> {
-  id: string;
-  type: EventType;
-  aggregate: AggregateInfo<AggregateType>;
-  createdAt: number;
+import { BaseEvent, EventClass } from "./BaseEvent";
+
+export type AggregateInfo<Type> = { readonly id: string; readonly type: Type };
+
+export interface AggregateEvent<EventType, AggregateType>
+  extends BaseEvent<EventType, AggregateType> {}
+
+export class AbstractAggregateEvent<EventType, AggregateType>
+  implements AggregateEvent<EventType, AggregateType> {
+  constructor(
+    public readonly id: string,
+    public readonly event_type: EventType,
+    public readonly aggregate: AggregateInfo<AggregateType>,
+    public readonly createdAt: number
+  ) {}
+  public readonly event_class: EventClass = "event";
 }

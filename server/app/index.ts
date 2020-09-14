@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import * as express from "express";
 import * as path from "path";
 import * as cors from "cors";
@@ -14,12 +16,19 @@ import makePassportMiddleware from "./security/passport";
 import { authenticatorFactory } from "./security/authenticate";
 import { buildCreateUserFlow } from "./users/buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./users/buildGetAllUsersFlow";
+import { createConnection } from "typeorm";
+import { User } from "../infra/orm/entities/User";
+import { Account } from "../infra/orm/entities/Account";
+import * as uuid from "uuid";
+import { userCreated, userDeleted } from "../domain";
+// import { Transaction } from "../infra/orm/entities/Transaction";
+// import { TransactionTarget } from "../infra/orm/entities/TransactionTarget";
 
 const port = parseInt(process.env.PORT || "3001");
 
 const logger = new ConsoleLogger();
 
-setupDb(logger).then((db) => {
+setupDb(logger).then(async (db) => {
   const app = express();
   app.use(bodyParser.json());
   app.use(
@@ -29,9 +38,24 @@ setupDb(logger).then((db) => {
   );
 
   // Fundamental service instanciations.
-  const repo = new RepositoryPostgres(db, logger);
+  console.log(process.env.TYPEORM_URL);
+  const cnx = await createConnection({
+    type: "postgres",
+    url: process.env.TYPEORM_URL,
+    migrations: ["server/infra/orm/migrations/**/*.ts"],
+    entities: ["server/infra/orm/entities/**/*.ts"],
+    dropSchema: true,
+    synchronize: true,
+  });
+
+  const em = cnx.createEntityManager();
+  const repo = new RepositoryPostgres(db, logger, cnx, em);
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
+
+  await repo.persist(
+    userCreated(uuid.v4(), "admin@famulous.app", "password", "salt")
+  )();
 
   // User flows injections.
   const userFlows = {
