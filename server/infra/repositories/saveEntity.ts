@@ -21,33 +21,18 @@ import { tryCatch } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { Persist } from "../../domain/Persist";
 import { saveTransactionCreated } from "./saveTransactionCreated";
-import { saveTransactionModel } from "./saveTransactionModel";
-import { saveUserModel } from "./saveUserModel";
-import { saveAccountModel } from "./saveAccountModel";
 import { InternalError } from "../../domain/interfaces";
 
 const _persist: KnexPersistAny = (deps) => (entity) => {
   switch (entity.event_type) {
     case ACCOUNT_CREATED:
-      return pipe(
-        saveAccountCreated(deps)(entity),
-        chain(() => saveAccountModel(deps)(entity))
-      );
+      return saveAccountCreated(deps)(entity);
     case USER_CREATED:
-      return pipe(
-        saveUserCreated(deps)(entity),
-        chain(() => saveUserModel(deps)(entity))
-      );
+      return saveUserCreated(deps)(entity);
     case ACCOUNT_DELETED:
-      return pipe(
-        saveAccountDeleted(deps)(entity),
-        chain(() => saveAccountModel(deps)(entity))
-      );
+      return saveAccountDeleted(deps)(entity);
     case TRANSACTION_CREATED:
-      return pipe(
-        saveTransactionCreated(deps)(entity),
-        chain(() => saveTransactionModel(deps)(entity))
-      );
+      return saveTransactionCreated(deps)(entity);
     default:
       throw new Error("Unhandled event");
   }
@@ -61,12 +46,12 @@ export const persist: (deps: Dependencies) => Persist<AnyEvent> = (deps) => (
       // This returns a Promise that we need to catch and normalize.
       // Errors that arise here are problems while opening transaction.
       // Errors in 'persist' are turned into either.
-      deps.knex.transaction((
+      deps.em.transaction((
         trx // Conveniently, a transaction implements Knex.
       ) =>
         pipe(
           entities,
-          A.map(_persist({ ...deps, knex: trx })),
+          A.map(_persist({ ...deps, em: trx })),
           A.sequence(taskEither)
         )()
       )

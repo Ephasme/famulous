@@ -1,7 +1,8 @@
 export const ACCOUNT = "account";
 export type AccountType = typeof ACCOUNT;
 
-export type AccountStates = "opened" | "closed";
+export const ACCOUNT_STATES = ["opened", "closed"];
+export type AccountStates = typeof ACCOUNT_STATES[number];
 
 export type AccountModel = {
   id: string;

@@ -1,33 +1,12 @@
 import {
   Column,
   Entity,
-  EntityManager,
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import {
-  AnyAccountEvent,
-  AnyUserEvent,
-  UserCreated,
-  UserDeleted,
-  UserStates,
-  USER_CREATED,
-  USER_DELETED,
-} from "../../../domain";
+import { UserStates, USER_STATES } from "../../../domain";
 import { Account } from "./Account";
-import * as c from "crypto";
-import { TaskEither } from "fp-ts/lib/TaskEither";
-import * as TE from "fp-ts/lib/TaskEither";
-import { Option } from "fp-ts/lib/Option";
-import * as O from "fp-ts/lib/Option";
-import {
-  ErrorWithStatus,
-  InternalError,
-  NotFound,
-} from "../../../domain/interfaces";
-import { flow, pipe } from "fp-ts/lib/function";
-import { tryCatch } from "../../FpUtils";
 
 export interface CreateUserData {
   id: string;
@@ -57,8 +36,8 @@ export class User {
     return dao;
   }
 
-  @Column({ enum: ["created", "active", "deleted", "inactive"] })
-  state!: string;
+  @Column({ enum: USER_STATES })
+  state!: UserStates;
 
   @Column({ unique: true })
   email!: string;

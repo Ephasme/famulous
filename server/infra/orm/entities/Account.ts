@@ -1,60 +1,21 @@
-import { pipe } from "fp-ts/lib/function";
-import { TaskEither } from "fp-ts/lib/TaskEither";
-import { Option } from "fp-ts/lib/Option";
-import * as O from "fp-ts/lib/Option";
-import * as TE from "fp-ts/lib/TaskEither";
+import { NonEmptyArray } from "fp-ts/lib/NonEmptyArray";
 import {
   Column,
   Entity,
-  EntityManager,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import {
-  ACCOUNT_CREATED,
-  ACCOUNT_DELETED,
-  AnyAccountEvent,
-} from "../../../domain";
-import { tryCatch } from "../../FpUtils";
+import { AccountStates, ACCOUNT_STATES } from "../../../domain";
+import { Transaction } from "./Transaction";
 // import { Transaction } from "./Transaction";
 import { User } from "./User";
-import {
-  ErrorWithStatus,
-  InternalError,
-  NotFound,
-} from "../../../domain/interfaces";
 
-export type AccountEventHandler = (deps: {
-  em: EntityManager;
-}) => (event: AnyAccountEvent) => TaskEither<ErrorWithStatus, Option<Account>>;
-
-export const handle: AccountEventHandler = ({ em }) => (event) => {
-  const account = new Account();
-  switch (event.event_type) {
-    case ACCOUNT_CREATED:
-      const { currency, name, userId } = event.payload;
-      return pipe(
-        tryCatch(() => em.getRepository(User).findOne(userId)),
-        TE.mapLeft(InternalError),
-        TE.chain((x) =>
-          pipe(
-            x,
-            O.fromNullable,
-            TE.fromOption(() => NotFound("Owner not found for new account."))
-          )
-        ),
-        TE.map((user) => {
-          account.balance = 0;
-          account.currency = currency;
-          account.name = name;
-          account.owners = [user];
-          account.state = "opened";
-          return O.some(account);
-        })
-      );
-    case ACCOUNT_DELETED:
-      return TE.right(O.none);
-  }
+export type CreateAccountParams = {
+  id: string;
+  owners: NonEmptyArray<User>;
+  name: string;
+  currency: string;
 };
 
 @Entity()
@@ -62,14 +23,25 @@ export class Account {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  //   @OneToMany(() => Transaction, (transaction) => transaction.account)
-  //   transactions!: Transaction[];
+  @OneToMany(() => Transaction, (transaction) => transaction.account)
+  transactions!: Transaction[];
+
+  static create(params: CreateAccountParams): Account {
+    const account = new Account();
+    account.id = params.id;
+    account.owners = params.owners;
+    account.balance = 0;
+    account.currency = params.currency;
+    account.name = params.name;
+    account.state = "opened";
+    return account;
+  }
 
   @ManyToMany(() => User, (user) => user.accounts)
   owners!: User[];
 
-  @Column({ enum: ["opened", "closed"] })
-  state!: string;
+  @Column({ enum: ACCOUNT_STATES })
+  state!: AccountStates;
 
   @Column()
   name!: string;

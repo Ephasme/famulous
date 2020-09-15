@@ -1,7 +1,13 @@
 export const USER = "user";
 export type UserType = typeof USER;
 
-export type UserStates = "created" | "active" | "deleted" | "inactive";
+export const USER_STATES = [
+  "created",
+  "active",
+  "deleted",
+  "inactive",
+] as const;
+export type UserStates = typeof USER_STATES[number];
 
 export type UserModel = {
   id: string;

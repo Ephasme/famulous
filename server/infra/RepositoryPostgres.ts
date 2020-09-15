@@ -1,15 +1,16 @@
 import Knex = require("knex");
 import { persist } from "./repositories/saveEntity";
-import { pipe } from "fp-ts/lib/function";
+import { pipe, flow } from "fp-ts/lib/function";
 import * as A from "fp-ts/lib/Array";
+import * as O from "fp-ts/lib/Option";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "./FpUtils";
 import { Persist, PersistAny } from "../domain/Persist";
-import { AccountsToUsersModel } from "./entities/AccountsToUsersModel";
-import { AnyEvent, UserModel, AccountModel, UserStates } from "../domain";
+import { AnyEvent, UserModel, UserStates, UserView } from "../domain";
 import { Repository, InternalError, Logger } from "../domain/interfaces";
 import { Connection, EntityManager } from "typeorm";
 import { User } from "./orm/entities/User";
+import { Account } from "./orm/entities/Account";
 
 export type UserFindParameters = Partial<{
   id: string;
@@ -18,7 +19,6 @@ export type UserFindParameters = Partial<{
 export type FindParameters = UserFindParameters;
 
 export type Dependencies = {
-  knex: Knex<AnyEvent>;
   cnx: Connection;
   logger: Logger;
   em: EntityManager;
@@ -32,29 +32,24 @@ export type KnexPersist<T extends AnyEvent> = (
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
 
-  constructor(
-    private knex: Knex,
-    logger: Logger,
-    cnx: Connection,
-    private em: EntityManager
-  ) {
-    this.dependencies = { knex, logger, cnx, em };
+  constructor(logger: Logger, cnx: Connection, private em: EntityManager) {
+    this.dependencies = { logger, cnx, em };
     this.persist = persist(this.dependencies);
   }
   persist: Persist<AnyEvent>;
 
   findUserById = (id: string) =>
     pipe(
-      tryCatch(() => this.knex<UserModel>("user").where({ id })),
-      TE.mapLeft(InternalError),
-      TE.map(A.head)
+      tryCatch(() => this.em.findOne(User, id).then(O.fromNullable)),
+      TE.mapLeft(InternalError)
     );
 
   findUserByEmail = (email: string) =>
     pipe(
-      tryCatch(() => this.knex<UserModel>("user").where({ email })),
-      TE.mapLeft(InternalError),
-      TE.map(A.head)
+      tryCatch(() =>
+        this.em.findOne(User, { where: { email } }).then(O.fromNullable)
+      ),
+      TE.mapLeft(InternalError)
     );
 
   findAllUsers = () =>
@@ -76,20 +71,44 @@ export class RepositoryPostgres implements Repository {
 
   findAccountById = (id: string) =>
     pipe(
-      tryCatch(() => this.knex<AccountModel>("account").where({ id })),
+      tryCatch(() => this.em.findOne(Account, id)),
       TE.mapLeft(InternalError),
-      TE.map(A.head)
+      TE.map(O.fromNullable),
+      TE.map(
+        flow(
+          O.map((a) => ({
+            balance: a.balance,
+            currency: a.currency,
+            id: a.id,
+            name: a.name,
+            state: a.state,
+          }))
+        )
+      )
     );
 
   findAllAccounts = (userId: string) =>
     pipe(
       tryCatch(() =>
-        this.knex<AccountsToUsersModel>("accounts_to_users")
-          .innerJoin("user", "user.id", "accounts_to_users.user_id")
-          .innerJoin("account", "account.id", "accounts_to_users.account_id")
-          .select<AccountModel[]>(["account.*"])
-          .where({ "user.id": userId })
+        this.em
+          .getRepository(Account)
+          .createQueryBuilder("account")
+          .leftJoinAndSelect("account.owners", "owner")
+          .where("owner.id = :userId", { userId })
+          .printSql()
+          .getMany()
       ),
-      TE.mapLeft(InternalError)
+      TE.mapLeft(InternalError),
+      TE.map(
+        flow(
+          A.map((a) => ({
+            balance: a.balance,
+            currency: a.currency,
+            id: a.id,
+            name: a.name,
+            state: a.state,
+          }))
+        )
+      )
     );
 }

@@ -17,10 +17,8 @@ import { authenticatorFactory } from "./security/authenticate";
 import { buildCreateUserFlow } from "./users/buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./users/buildGetAllUsersFlow";
 import { createConnection } from "typeorm";
-import { User } from "../infra/orm/entities/User";
-import { Account } from "../infra/orm/entities/Account";
 import * as uuid from "uuid";
-import { userCreated, userDeleted } from "../domain";
+import { userCreated } from "../domain";
 // import { Transaction } from "../infra/orm/entities/Transaction";
 // import { TransactionTarget } from "../infra/orm/entities/TransactionTarget";
 
@@ -49,7 +47,7 @@ setupDb(logger).then(async (db) => {
   });
 
   const em = cnx.createEntityManager();
-  const repo = new RepositoryPostgres(db, logger, cnx, em);
+  const repo = new RepositoryPostgres(logger, cnx, em);
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
 
