@@ -37,7 +37,7 @@ class TransactionCreatedImpl
       uuid.v4(),
       TRANSACTION_CREATED,
       { id, type: TRANSACTION },
-      Date.now(),
+      new Date(),
       { account_id: accountId, targets }
     );
   }
@@ -46,7 +46,7 @@ class TransactionCreatedImpl
     id: string,
     event_type: TransactionCreatedType,
     aggregate: AggregateInfo<TransactionType>,
-    createdAt: number,
+    createdAt: Date,
     public readonly payload: Payload
   ) {
     super(id, event_type, aggregate, createdAt);

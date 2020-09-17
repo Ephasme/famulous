@@ -28,7 +28,7 @@ class UserCreatedImpl
       uuid.v4(),
       USER_CREATED,
       { id, type: USER },
-      Date.now(),
+      new Date(),
       { email, password, salt }
     );
   }
@@ -37,7 +37,7 @@ class UserCreatedImpl
     id: string,
     event_type: UserCreatedType,
     aggregate: AggregateInfo<UserType>,
-    createdAt: number,
+    createdAt: Date,
     public readonly payload: Payload
   ) {
     super(id, event_type, aggregate, createdAt);

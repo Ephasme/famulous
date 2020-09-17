@@ -11,7 +11,7 @@ export class AbstractAggregateEvent<EventType, AggregateType>
     public readonly id: string,
     public readonly event_type: EventType,
     public readonly aggregate: AggregateInfo<AggregateType>,
-    public readonly createdAt: number
+    public readonly createdAt: Date
   ) {}
   public readonly event_class: EventClass = "event";
 }

@@ -1,9 +1,9 @@
-import { ChildEntity, Column, OneToOne } from "typeorm";
+import { Column, Entity, OneToOne } from "typeorm";
 import { Account } from "../Account";
 import { BaseEvent } from "./BaseEvent";
-import * as domain from "../../../../domain/account/events/AccountCreated";
+import * as domain from "../../../domain/account/events/AccountCreated";
 
-@ChildEntity()
+@Entity()
 export class AccountCreated extends BaseEvent {
   @OneToOne(() => Account)
   user_id!: string;

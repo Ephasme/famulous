@@ -9,8 +9,8 @@ import { Persist, PersistAny } from "../domain/Persist";
 import { AnyEvent, UserModel, UserStates, UserView } from "../domain";
 import { Repository, InternalError, Logger } from "../domain/interfaces";
 import { Connection, EntityManager } from "typeorm";
-import { User } from "./orm/entities/User";
-import { Account } from "./orm/entities/Account";
+import { User } from "./entities/User";
+import { Account } from "./entities/Account";
 
 export type UserFindParameters = Partial<{
   id: string;
@@ -60,9 +60,10 @@ export class RepositoryPostgres implements Repository {
           return {
             email: dao.email,
             id: dao.id,
-            state: dao.state as UserStates,
+            state: dao.state,
             password: dao.password,
             salt: dao.salt,
+            createdAt: dao.createdAt,
           };
         })
       ),
@@ -82,6 +83,7 @@ export class RepositoryPostgres implements Repository {
             id: a.id,
             name: a.name,
             state: a.state,
+            createdAt: a.createdAt,
           }))
         )
       )
@@ -107,6 +109,7 @@ export class RepositoryPostgres implements Repository {
             id: a.id,
             name: a.name,
             state: a.state,
+            createdAt: a.createdAt,
           }))
         )
       )

@@ -1,8 +1,8 @@
-import { ChildEntity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { ChildEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { BaseEvent } from "./BaseEvent";
-import * as domain from "../../../../domain/user/events/UserCreated";
+import * as domain from "../../../domain/user/events/UserCreated";
 
-@ChildEntity()
+@Entity()
 export class UserCreated extends BaseEvent {
   @Column()
   email!: string;

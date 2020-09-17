@@ -10,5 +10,5 @@ export interface BaseEvent<EventType, AggregateType> {
   readonly event_type: EventType;
   readonly event_class: AnyEventClass;
   readonly aggregate: AggregateInfo<AggregateType>;
-  readonly createdAt: number;
+  readonly createdAt: Date;
 }

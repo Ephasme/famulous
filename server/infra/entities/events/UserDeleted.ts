@@ -1,5 +1,5 @@
-import { ChildEntity } from "typeorm";
+import { ChildEntity, Entity } from "typeorm";
 import { BaseEvent } from "./BaseEvent";
 
-@ChildEntity()
+@Entity()
 export class UserDeleted extends BaseEvent {}

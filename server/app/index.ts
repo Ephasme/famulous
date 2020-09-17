@@ -5,7 +5,6 @@ import * as path from "path";
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
 
-import setupDb from "../infra/db/db";
 import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
 import userRoutes from "./users/routes";
@@ -26,7 +25,7 @@ const port = parseInt(process.env.PORT || "3001");
 
 const logger = new ConsoleLogger();
 
-setupDb(logger).then(async (db) => {
+Promise.resolve().then(async () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(
@@ -40,8 +39,8 @@ setupDb(logger).then(async (db) => {
   const cnx = await createConnection({
     type: "postgres",
     url: process.env.TYPEORM_URL,
-    migrations: ["server/infra/orm/migrations/**/*.ts"],
-    entities: ["server/infra/orm/entities/**/*.ts"],
+    migrations: ["server/infra/migrations/**/*.ts"],
+    entities: ["server/infra/entities/**/*.ts"],
     dropSchema: true,
     synchronize: true,
   });

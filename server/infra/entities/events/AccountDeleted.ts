@@ -1,8 +1,8 @@
-import { ChildEntity } from "typeorm";
+import { ChildEntity, Entity } from "typeorm";
 import { BaseEvent } from "./BaseEvent";
-import * as domain from "../../../../domain/account/events/AccountDeleted";
+import * as domain from "../../../domain/account/events/AccountDeleted";
 
-@ChildEntity()
+@Entity()
 export class AccountDeleted extends BaseEvent {
   static from(event: domain.AccountDeleted): AccountDeleted {
     const dao = new AccountDeleted();

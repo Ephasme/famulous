@@ -1,3 +1,5 @@
+import { Timestamps } from "../Timestamps";
+
 export const USER = "user";
 export type UserType = typeof USER;
 
@@ -15,7 +17,7 @@ export type UserModel = {
   email: string;
   password: string;
   salt: string;
-};
+} & Timestamps;
 
 export type UserView = {
   id: string;

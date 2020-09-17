@@ -15,7 +15,7 @@ class AccountDeletedImpl
       uuid.v4(),
       ACCOUNT_DELETED,
       { id, type: ACCOUNT },
-      Date.now()
+      new Date()
     );
   }
 
@@ -23,7 +23,7 @@ class AccountDeletedImpl
     id: string,
     event_type: AccountDeletedType,
     aggregate: AggregateInfo<AccountType>,
-    createdAt: number
+    createdAt: Date
   ) {
     super(id, event_type, aggregate, createdAt);
   }

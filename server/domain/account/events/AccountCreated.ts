@@ -28,7 +28,7 @@ class AccountCreatedImpl
       uuid.v4(),
       ACCOUNT_CREATED,
       { id, type: ACCOUNT },
-      Date.now(),
+      new Date(),
       { name, userId, currency }
     );
   }
@@ -37,7 +37,7 @@ class AccountCreatedImpl
     id: string,
     event_type: AccountCreatedType,
     aggregate: AggregateInfo<AccountType>,
-    createdAt: number,
+    createdAt: Date,
     readonly payload: Payload
   ) {
     super(id, event_type, aggregate, createdAt);

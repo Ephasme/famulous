@@ -4,8 +4,8 @@ import { pipe, constVoid } from "fp-ts/lib/function";
 import { tryCatch } from "../FpUtils";
 import * as TE from "fp-ts/lib/TaskEither";
 import { InternalError } from "../../domain/interfaces";
-import * as dao from "../orm/entities/events/AccountDeleted";
-import { Account } from "../orm/entities/Account";
+import * as dao from "../entities/events/AccountDeleted";
+import { Account } from "../entities/Account";
 
 export const saveAccountDeleted: KnexPersist<AccountDeleted> = ({ em }) => (
   event

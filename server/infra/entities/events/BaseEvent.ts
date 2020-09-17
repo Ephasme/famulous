@@ -5,10 +5,8 @@ import {
   PrimaryGeneratedColumn,
   TableInheritance,
 } from "typeorm";
-import { AnyEvent } from "../../../../domain";
+import { AnyEvent } from "../../../domain";
 
-@Entity()
-@TableInheritance({ column: { type: "varchar", name: "__type" } })
 export abstract class BaseEvent {
   @PrimaryGeneratedColumn("uuid")
   event_id!: string;
@@ -25,12 +23,16 @@ export abstract class BaseEvent {
   @Column()
   event_type!: string;
 
+  @Column()
+  created_at!: Date;
+
   static mapEventToDao<T extends BaseEvent>(ev: AnyEvent, base: T): T {
     base.aggregate_id = ev.aggregate.id;
     base.aggregate_type = ev.aggregate.type;
     base.event_class = ev.event_class;
     base.event_type = ev.event_type;
     base.event_id = ev.id;
+    base.created_at = ev.createdAt;
     return base;
   }
 }

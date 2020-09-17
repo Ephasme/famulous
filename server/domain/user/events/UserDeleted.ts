@@ -15,7 +15,7 @@ class UserDeletedImpl
       uuid.v4(),
       USER_DELETED,
       { id, type: USER },
-      Date.now()
+      new Date()
     );
   }
 
@@ -23,7 +23,7 @@ class UserDeletedImpl
     id: string,
     event_type: UserDeletedType,
     aggregate: AggregateInfo<UserType>,
-    createdAt: number,
+    createdAt: Date,
     public readonly payload: void
   ) {
     super(id, event_type, aggregate, createdAt);
