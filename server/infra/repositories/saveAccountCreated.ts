@@ -1,16 +1,19 @@
-import { KnexPersist } from "../RepositoryPostgres";
 import { AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "../FpUtils";
-import { InternalError } from "../../domain/interfaces";
+import { AsyncResult, InternalError, Logger } from "../../domain/interfaces";
 import * as dao from "../entities/events/AccountCreated";
 import { Account } from "../entities/Account";
-import { User } from "../entities/User";
+import { EntityManager } from "typeorm";
 
-export const saveAccountCreated: KnexPersist<AccountCreated> = ({ em }) => (
-  event
-) =>
+export const saveAccountCreated = ({
+  em,
+  logger,
+}: {
+  em: EntityManager;
+  logger: Logger;
+}) => (event: AccountCreated): AsyncResult<void> =>
   pipe(
     tryCatch(() => em.save(dao.AccountCreated.from(event))),
     TE.map(() =>

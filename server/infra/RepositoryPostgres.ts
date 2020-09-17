@@ -1,12 +1,11 @@
-import Knex = require("knex");
-import { persist } from "./repositories/saveEntity";
+import persist from "./repositories/persist";
 import { pipe, flow } from "fp-ts/lib/function";
 import * as A from "fp-ts/lib/Array";
 import * as O from "fp-ts/lib/Option";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "./FpUtils";
-import { Persist, PersistAny } from "../domain/Persist";
-import { AnyEvent, UserModel, UserStates, UserView } from "../domain";
+import { Persist } from "../domain/Persist";
+import { AnyEvent, UserModel } from "../domain";
 import { Repository, InternalError, Logger } from "../domain/interfaces";
 import { Connection, EntityManager } from "typeorm";
 import { User } from "./entities/User";
@@ -23,11 +22,6 @@ export type Dependencies = {
   logger: Logger;
   em: EntityManager;
 };
-
-export type KnexPersistAny = (dependencies: Dependencies) => PersistAny;
-export type KnexPersist<T extends AnyEvent> = (
-  dependencies: Dependencies
-) => Persist<T>;
 
 export class RepositoryPostgres implements Repository {
   private dependencies: Dependencies;
