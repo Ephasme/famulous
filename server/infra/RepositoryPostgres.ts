@@ -5,9 +5,9 @@ import * as O from "fp-ts/lib/Option";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "./FpUtils";
 import { Persist } from "../domain/Persist";
-import { AnyEvent, UserModel } from "../domain";
+import { AccountModel, AnyEvent, UserModel } from "../domain";
 import { Repository, InternalError, Logger } from "../domain/interfaces";
-import { Connection, EntityManager } from "typeorm";
+import { AdvancedConsoleLogger, Connection, EntityManager } from "typeorm";
 import { User } from "./entities/User";
 import { Account } from "./entities/Account";
 
@@ -66,8 +66,20 @@ export class RepositoryPostgres implements Repository {
 
   findAccountById = (id: string) =>
     pipe(
-      tryCatch(() => this.em.findOne(Account, id)),
+      tryCatch(() =>
+        this.em.findOne(Account, id, {
+          relations: [
+            "transactions",
+            "transactions.targets",
+            "transactions.targets.target",
+          ],
+        })
+      ),
       TE.mapLeft(InternalError),
+      TE.map((x) => {
+        this.dependencies.logger.debug(JSON.stringify(x));
+        return x;
+      }),
       TE.map(O.fromNullable),
       TE.map(
         flow(
@@ -78,6 +90,17 @@ export class RepositoryPostgres implements Repository {
             name: a.name,
             state: a.state,
             createdAt: a.createdAt,
+            transactions: a.transactions.map((trx) => {
+              return {
+                targets: trx.targets.map((target) => {
+                  return {
+                    targetId: target.target.id,
+                    amount: target.amount,
+                    payee: target.payee,
+                  };
+                }),
+              };
+            }),
           }))
         )
       )
@@ -97,7 +120,8 @@ export class RepositoryPostgres implements Repository {
       TE.mapLeft(InternalError),
       TE.map(
         flow(
-          A.map((a) => ({
+          //@ts-ignore
+          A.map<Account, AccountModel>((a) => ({
             balance: a.balance,
             currency: a.currency,
             id: a.id,

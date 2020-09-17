@@ -17,7 +17,8 @@ import { buildCreateUserFlow } from "./users/buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./users/buildGetAllUsersFlow";
 import { createConnection } from "typeorm";
 import * as uuid from "uuid";
-import { userCreated } from "../domain";
+import { accountCreated, transactionCreated, userCreated } from "../domain";
+import { Account } from "../infra/entities/Account";
 // import { Transaction } from "../infra/orm/entities/Transaction";
 // import { TransactionTarget } from "../infra/orm/entities/TransactionTarget";
 
@@ -50,9 +51,39 @@ Promise.resolve().then(async () => {
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
 
+  const userId = uuid.v4();
   await repo.persist(
-    userCreated(uuid.v4(), "admin@famulous.app", "password", "salt")
+    userCreated(userId, "admin@famulous.app", "password", "salt")
   )();
+  const accountId = uuid.v4();
+  await repo.persist(accountCreated(accountId, "account", userId, "EUR"))();
+  const accountId2 = uuid.v4();
+  await repo.persist(accountCreated(accountId2, "account2", userId, "EUR"))();
+  const accountId3 = uuid.v4();
+  await repo.persist(accountCreated(accountId3, "account3", userId, "EUR"))();
+  const transactionId = uuid.v4();
+  await repo.persist(
+    transactionCreated(transactionId, accountId, [
+      { account_id: accountId2, amount: 12 },
+      { account_id: accountId3, amount: 2 },
+    ])
+  )();
+
+  console.log(userId);
+  console.log(accountId);
+  console.log(accountId2);
+  console.log(accountId3);
+  console.log(transactionId);
+
+  console.log(JSON.stringify(await repo.findAccountById(accountId)()));
+
+  console.log(
+    JSON.stringify(
+      await cnx.getRepository(Account).findOne(accountId, {
+        relations: ["transactions", "transactions.targets"],
+      })
+    )
+  );
 
   // User flows injections.
   const userFlows = {

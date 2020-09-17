@@ -1,11 +1,11 @@
 import { Column, Entity, ManyToOne } from "typeorm";
-import { Account } from "../Account";
 import { BaseEvent } from "./BaseEvent";
 import * as domain from "../../../domain/account/events/AccountCreated";
+import { User } from "../User";
 
 @Entity()
 export class AccountCreated extends BaseEvent {
-  @ManyToOne(() => Account)
+  @ManyToOne(() => User)
   user_id!: string;
 
   @Column()
