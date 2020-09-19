@@ -1,4 +1,4 @@
-import { ChildEntity, Entity } from "typeorm";
+import { Entity } from "typeorm";
 import { BaseEvent } from "./BaseEvent";
 
 @Entity()

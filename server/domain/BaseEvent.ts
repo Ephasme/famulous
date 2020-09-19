@@ -7,8 +7,8 @@ export type AnyEventClass = EventClass | QueryClass | CommandClass;
 
 export interface BaseEvent<EventType, AggregateType> {
   readonly id: string;
-  readonly event_type: EventType;
-  readonly event_class: AnyEventClass;
+  readonly eventType: EventType;
+  readonly eventClass: AnyEventClass;
   readonly aggregate: AggregateInfo<AggregateType>;
   readonly createdAt: Date;
 }

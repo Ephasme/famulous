@@ -25,9 +25,6 @@ export class Account implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.account)
-  transactions!: Transaction[];
-
   static create(params: CreateAccountParams): Account {
     const account = new Account();
     account.id = params.id;

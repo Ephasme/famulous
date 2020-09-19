@@ -12,11 +12,4 @@ export type AccountModel = {
   name: string;
   balance: number;
   currency: string;
-  transactions: Array<{
-    targets: Array<{
-      targetId: string;
-      amount: number;
-      payee: string;
-    }>;
-  }>;
 } & Timestamps;

@@ -24,3 +24,4 @@ export * from "./account/events/AccountEvent";
 // Exporting events
 export * from "./transaction/events/TransactionCreated";
 export * from "./transaction/events/TransactionEvent";
+export * from "./transaction/TransactionModel";

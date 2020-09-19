@@ -15,6 +15,5 @@ export const saveAccountDeleted = ({ em }: PersistDependencies) => (
     TE.chain(() =>
       tryCatch(() => em.delete(Account, { id: event.aggregate.id }))
     ),
-    TE.mapLeft(InternalError),
     TE.map(constVoid)
   );

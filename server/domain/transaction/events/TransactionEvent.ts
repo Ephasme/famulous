@@ -3,10 +3,8 @@ import {
   TransactionCreated,
   AggregateEvent,
   AbstractAggregateEvent,
+  TransactionType,
 } from "../..";
-
-export const TRANSACTION = "transaction";
-export type TransactionType = typeof TRANSACTION;
 
 export type TransactionEvent<
   EventType extends AnyTransactionEventType

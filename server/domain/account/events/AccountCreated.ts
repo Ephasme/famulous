@@ -35,12 +35,12 @@ class AccountCreatedImpl
 
   private constructor(
     id: string,
-    event_type: AccountCreatedType,
+    eventType: AccountCreatedType,
     aggregate: AggregateInfo<AccountType>,
     createdAt: Date,
     readonly payload: Payload
   ) {
-    super(id, event_type, aggregate, createdAt);
+    super(id, eventType, aggregate, createdAt);
   }
 }
 

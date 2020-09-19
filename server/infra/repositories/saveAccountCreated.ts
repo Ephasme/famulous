@@ -25,6 +25,5 @@ export const saveAccountCreated = ({
       })
     ),
     TE.chain((dao) => tryCatch(() => em.save(dao))),
-    TE.mapLeft(InternalError),
     TE.map(constVoid)
   );

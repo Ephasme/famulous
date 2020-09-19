@@ -1,21 +1,19 @@
 import {
-  BaseEntity,
   Column,
   Entity,
   JoinTable,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Account } from "./Account";
 import { Transaction } from "./Transaction";
 
 @Entity()
-export class TransactionTarget extends BaseEntity {
+export class TransactionTarget {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => Transaction, (x) => x.targets)
+  @ManyToOne(() => Transaction, (transaction) => transaction.splits)
   @JoinTable()
   transaction!: Transaction;
 

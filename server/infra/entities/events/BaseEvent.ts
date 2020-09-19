@@ -1,38 +1,32 @@
-import {
-  Column,
-  Entity,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  TableInheritance,
-} from "typeorm";
+import { Column, PrimaryGeneratedColumn } from "typeorm";
 import { AnyEvent } from "../../../domain";
 
 export abstract class BaseEvent {
   @PrimaryGeneratedColumn("uuid")
-  event_id!: string;
+  eventId!: string;
 
   @Column({ enum: ["event", "command", "query"] })
-  event_class!: string;
+  eventClass!: string;
 
   @Column("uuid")
-  aggregate_id!: string;
+  aggregateId!: string;
 
   @Column()
-  aggregate_type!: string;
+  aggregateType!: string;
 
   @Column()
-  event_type!: string;
+  eventType!: string;
 
   @Column()
-  created_at!: Date;
+  createdAt!: Date;
 
   static mapEventToDao<T extends BaseEvent>(ev: AnyEvent, base: T): T {
-    base.aggregate_id = ev.aggregate.id;
-    base.aggregate_type = ev.aggregate.type;
-    base.event_class = ev.event_class;
-    base.event_type = ev.event_type;
-    base.event_id = ev.id;
-    base.created_at = ev.createdAt;
+    base.aggregateId = ev.aggregate.id;
+    base.aggregateType = ev.aggregate.type;
+    base.eventClass = ev.eventClass;
+    base.eventType = ev.eventType;
+    base.eventId = ev.id;
+    base.createdAt = ev.createdAt;
     return base;
   }
 }

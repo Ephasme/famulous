@@ -15,6 +15,7 @@ import {
   UnprocessableEntity,
   Forbidden,
   NotFound,
+  AsyncResult,
 } from "../../domain/interfaces";
 
 const deleteAccountCommandValidator = D.type({
@@ -23,7 +24,7 @@ const deleteAccountCommandValidator = D.type({
 
 const createAccountCommandValidator = D.type({
   id: uuid,
-  user_id: uuid,
+  userId: uuid,
   name: D.string,
   currency: D.string,
 });
@@ -40,7 +41,7 @@ export const Commands = {
     return accountCreated(
       command.id,
       command.name,
-      command.user_id,
+      command.userId,
       command.currency
     );
   },
@@ -50,7 +51,9 @@ export type DeleteAccountCommand = D.TypeOf<
   typeof deleteAccountCommandValidator
 >;
 
-export const validateCreateAccountCommand = (repository: Repository) =>
+export const validateCreateAccountCommand = (
+  repository: Repository
+): ((i: unknown) => AsyncResult<CreateAccountCommand>) =>
   flow(
     createAccountCommandValidator.decode,
     E.mapLeft(flow(D.draw, UnprocessableEntity)),
@@ -68,7 +71,9 @@ export const validateCreateAccountCommand = (repository: Repository) =>
     )
   );
 
-export const validateDeleteAccountCommand = (repository: Repository) =>
+export const validateDeleteAccountCommand = (
+  repository: Repository
+): ((i: unknown) => AsyncResult<DeleteAccountCommand>) =>
   flow(
     deleteAccountCommandValidator.decode,
     E.mapLeft(flow(D.draw, UnprocessableEntity)),

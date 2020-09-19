@@ -6,7 +6,7 @@ import { User } from "../User";
 @Entity()
 export class AccountCreated extends BaseEvent {
   @ManyToOne(() => User)
-  user_id!: string;
+  userId!: string;
 
   @Column()
   currency!: string;
@@ -19,7 +19,7 @@ export class AccountCreated extends BaseEvent {
     this.mapEventToDao(event, dao);
     dao.currency = event.payload.currency;
     dao.name = event.payload.name;
-    dao.user_id = event.payload.userId;
+    dao.userId = event.payload.userId;
     return dao;
   }
 }

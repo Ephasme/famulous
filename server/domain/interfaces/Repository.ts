@@ -1,10 +1,7 @@
-import { TaskEither } from "fp-ts/lib/TaskEither";
 import { Option } from "fp-ts/lib/Option";
 import { AnyEvent, AccountModel } from "..";
 import { UserModel } from "../user/UserModel";
-import { ErrorWithStatus } from "./Errors";
-
-export type AsyncResult<T> = TaskEither<ErrorWithStatus, T>;
+import { AsyncResult } from "./AsyncResult";
 
 export interface Repository {
   persist(...events: AnyEvent[]): AsyncResult<void>;

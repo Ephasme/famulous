@@ -21,11 +21,11 @@ class AccountDeletedImpl
 
   private constructor(
     id: string,
-    event_type: AccountDeletedType,
+    eventType: AccountDeletedType,
     aggregate: AggregateInfo<AccountType>,
     createdAt: Date
   ) {
-    super(id, event_type, aggregate, createdAt);
+    super(id, eventType, aggregate, createdAt);
   }
 }
 

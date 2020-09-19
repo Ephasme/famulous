@@ -35,12 +35,12 @@ class UserCreatedImpl
 
   private constructor(
     id: string,
-    event_type: UserCreatedType,
+    eventType: UserCreatedType,
     aggregate: AggregateInfo<UserType>,
     createdAt: Date,
     public readonly payload: Payload
   ) {
-    super(id, event_type, aggregate, createdAt);
+    super(id, eventType, aggregate, createdAt);
   }
 }
 

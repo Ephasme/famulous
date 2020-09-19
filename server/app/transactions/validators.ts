@@ -6,10 +6,10 @@ import { UnprocessableEntity } from "../../domain/interfaces";
 
 const createTransactionCommandValidator = D.type({
   id: uuid,
-  account_id: uuid,
+  accountId: uuid,
   targets: D.array(
     D.type({
-      account_id: D.string,
+      accountId: D.string,
       amount: D.number,
     })
   ),

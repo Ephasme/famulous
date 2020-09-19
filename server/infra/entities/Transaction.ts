@@ -1,20 +1,11 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Timestamps } from "../../domain/Timestamps";
-import { Account } from "./Account";
-import { TransactionTarget } from "./TransactionTarget";
+import { TransactionTarget as TransactionSplit } from "./TransactionTarget";
 
 export type CreateTransactionParams = {
   id: string;
-  account: Account;
   createdAt: Date;
-  targets: TransactionTarget[];
+  splits: TransactionSplit[];
 };
 
 @Entity()
@@ -22,23 +13,18 @@ export class Transaction implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @OneToMany(() => TransactionTarget, (target) => target.transaction, {
+  @OneToMany(() => TransactionSplit, (target) => target.transaction, {
     cascade: true,
   })
-  targets!: TransactionTarget[];
+  splits!: TransactionSplit[];
 
   static create(params: CreateTransactionParams): Transaction {
     const dao = new Transaction();
-    dao.account = params.account;
     dao.createdAt = params.createdAt;
-    dao.targets = params.targets;
+    dao.splits = params.splits;
     dao.id = params.id;
     return dao;
   }
-
-  @ManyToOne(() => Account, (account) => account.transactions)
-  @JoinTable()
-  account!: Account;
 
   @Column()
   createdAt!: Date;

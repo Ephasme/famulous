@@ -1,4 +1,3 @@
-import { Dependencies } from "../RepositoryPostgres";
 import {
   USER_CREATED,
   ACCOUNT_CREATED,
@@ -13,7 +12,6 @@ import {
   map,
   chain,
   fromEither,
-  TaskEither,
 } from "fp-ts/lib/TaskEither";
 import * as A from "fp-ts/lib/Array";
 import { pipe, constVoid } from "fp-ts/lib/function";
@@ -21,12 +19,7 @@ import { saveAccountCreated } from "./saveAccountCreated";
 import { tryCatch } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
 import { saveTransactionCreated } from "./saveTransactionCreated";
-import {
-  AsyncResult,
-  ErrorWithStatus,
-  InternalError,
-  Logger,
-} from "../../domain/interfaces";
+import { AsyncResult, InternalError, Logger } from "../../domain/interfaces";
 import { EntityManager } from "typeorm";
 
 export type PersistDependencies = { em: EntityManager; logger: Logger };
@@ -34,7 +27,7 @@ export type PersistDependencies = { em: EntityManager; logger: Logger };
 const _persist = (deps: PersistDependencies) => (
   entity: AnyEvent
 ): AsyncResult<void> => {
-  switch (entity.event_type) {
+  switch (entity.eventType) {
     case ACCOUNT_CREATED:
       return saveAccountCreated(deps)(entity);
     case USER_CREATED:
@@ -69,8 +62,8 @@ export default (deps: PersistDependencies) => (
     // This gives back a Either<Error, Either<E, A>>.
     // We need to change the error into error with status.
     mapLeft((e) => {
-      deps.logger.error(`error while opening transaction ${e.message}`);
-      return InternalError(e);
+      deps.logger.error(`error while opening transaction ${e.error.message}`);
+      return e;
     }),
     // Changes the either into taskEither and flatten.
     chain(fromEither),

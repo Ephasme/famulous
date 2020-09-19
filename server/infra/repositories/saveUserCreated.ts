@@ -21,6 +21,5 @@ export const saveUserCreated = ({ em }: PersistDependencies) => (
       })
     ),
     TE.chain((dao) => tryCatch(() => em.save(dao))),
-    TE.mapLeft(InternalError),
     TE.map(constVoid)
   );

@@ -17,15 +17,14 @@ export const saveTransactionCreated = ({ em }: PersistDependencies) => (
     tryCatch(() => em.save(dao.TransactionCreated.from(event))),
     TE.map(() =>
       Transaction.create({
-        account: { id: event.payload.account_id } as Account,
         id: event.aggregate.id,
         createdAt: event.createdAt,
-        targets: pipe(
+        splits: pipe(
           event.payload.targets,
           A.map((target) => {
             const targetDao = new TransactionTarget();
             targetDao.amount = target.amount;
-            targetDao.target = { id: target.account_id } as Account;
+            targetDao.target = { id: target.accountId } as Account;
             targetDao.payee = "no-payee";
             return targetDao;
           })
@@ -33,6 +32,5 @@ export const saveTransactionCreated = ({ em }: PersistDependencies) => (
       })
     ),
     TE.chain((dao) => tryCatch(() => em.save(Transaction, dao))),
-    TE.mapLeft(InternalError),
     TE.map(constVoid)
   );

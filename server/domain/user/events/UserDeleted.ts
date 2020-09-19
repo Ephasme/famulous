@@ -21,12 +21,12 @@ class UserDeletedImpl
 
   private constructor(
     id: string,
-    event_type: UserDeletedType,
+    eventType: UserDeletedType,
     aggregate: AggregateInfo<UserType>,
     createdAt: Date,
     public readonly payload: void
   ) {
-    super(id, event_type, aggregate, createdAt);
+    super(id, eventType, aggregate, createdAt);
   }
 }
 

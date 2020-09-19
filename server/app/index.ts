@@ -64,25 +64,15 @@ Promise.resolve().then(async () => {
   const transactionId = uuid.v4();
   await repo.persist(
     transactionCreated(transactionId, accountId, [
-      { account_id: accountId2, amount: 12 },
-      { account_id: accountId3, amount: 2 },
+      { accountId: accountId2, amount: 12 },
+      { accountId: accountId3, amount: 2 },
     ])
   )();
 
-  console.log(userId);
-  console.log(accountId);
-  console.log(accountId2);
-  console.log(accountId3);
-  console.log(transactionId);
-
-  console.log(JSON.stringify(await repo.findAccountById(accountId)()));
-
   console.log(
-    JSON.stringify(
-      await cnx.getRepository(Account).findOne(accountId, {
-        relations: ["transactions", "transactions.targets"],
-      })
-    )
+    await cnx.getRepository(Account).findOne(accountId, {
+      relations: ["transactions", "transactions.targets"],
+    })
   );
 
   // User flows injections.

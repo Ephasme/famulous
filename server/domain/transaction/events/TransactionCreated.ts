@@ -12,12 +12,12 @@ export const TRANSACTION_CREATED = "transaction.created";
 export type TransactionCreatedType = typeof TRANSACTION_CREATED;
 
 interface AccountTarget {
-  readonly account_id: string;
+  readonly accountId: string;
   readonly amount: number;
 }
 
 interface Payload {
-  readonly account_id: string;
+  readonly accountId: string;
   readonly targets: AccountTarget[];
 }
 
@@ -38,18 +38,18 @@ class TransactionCreatedImpl
       TRANSACTION_CREATED,
       { id, type: TRANSACTION },
       new Date(),
-      { account_id: accountId, targets }
+      { accountId, targets }
     );
   }
 
   private constructor(
     id: string,
-    event_type: TransactionCreatedType,
+    eventType: TransactionCreatedType,
     aggregate: AggregateInfo<TransactionType>,
     createdAt: Date,
     public readonly payload: Payload
   ) {
-    super(id, event_type, aggregate, createdAt);
+    super(id, eventType, aggregate, createdAt);
   }
 }
 

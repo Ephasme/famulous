@@ -26,9 +26,9 @@ const makePassportMiddleware = (
         TE.chain(
           TE.fromOption(() => NotFound("User not found during authentication"))
         ),
-        TE.map((u) => {
-          logger.info(`Successful authentication: ${u.email}`);
-          return u;
+        TE.map((user) => {
+          logger.info(`Successful authentication: ${user.email}`);
+          return user;
         }),
         TE.fold(
           (err) => task.of(done(err.error, false)),
