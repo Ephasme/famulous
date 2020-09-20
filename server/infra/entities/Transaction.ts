@@ -1,34 +1,51 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Timestamps } from "../../domain/Timestamps";
-import { TransactionTarget as TransactionSplit } from "./TransactionTarget";
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Account } from "./Account";
+import { ACCOUNT } from "./TransactionSQL";
 
 export type CreateTransactionParams = {
   id: string;
+  accountId: string;
+  amount: number;
   createdAt: Date;
-  splits: TransactionSplit[];
+  description?: string;
+  payee?: string;
 };
 
 @Entity()
-export class Transaction implements Timestamps {
+export class Transaction {
+  static create(params: CreateTransactionParams): Transaction {
+    const dao = new Transaction();
+    dao.amount = params.amount;
+    dao.account = { id: params.accountId } as Account;
+    dao.id = params.id;
+    dao.payee = params.payee;
+    dao.description = params.description;
+    dao.createdAt = params.createdAt;
+    return dao;
+  }
+
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @OneToMany(() => TransactionSplit, (target) => target.transaction, {
-    cascade: true,
-  })
-  splits!: TransactionSplit[];
+  @Column({ nullable: true })
+  payee?: string;
 
-  static create(params: CreateTransactionParams): Transaction {
-    const dao = new Transaction();
-    dao.createdAt = params.createdAt;
-    dao.splits = params.splits;
-    dao.id = params.id;
-    return dao;
-  }
+  @ManyToOne(() => Account)
+  @JoinTable()
+  [ACCOUNT]!: Account;
+
+  @Column()
+  amount!: number;
 
   @Column()
   createdAt!: Date;
 
   @Column({ nullable: true })
-  updatedAt?: Date;
+  description?: string;
 }

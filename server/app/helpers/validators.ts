@@ -12,3 +12,11 @@ export const uuid = pipe(
     return error ? D.failure(value, error.message) : D.success(value as string);
   })
 );
+
+export const date = pipe(
+  D.string,
+  D.parse((s) => {
+    const { error, value } = Joi.date().required().validate(s);
+    return error ? D.failure(value, error.message) : D.success(value as Date);
+  })
+);

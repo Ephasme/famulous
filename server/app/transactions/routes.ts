@@ -20,9 +20,7 @@ export default (repository: Repository, auth: Authenticator): Router => {
       //       map((emptyTransaction) => ({ command, emptyTransaction }))
       //     )
       //   ), TODO: check if transaction doesn't exists yet + check if targetted accounts exists + check targetted accounts are owned by current user
-      map((command) =>
-        transactionCreated(command.id, command.accountId, command.targets)
-      ),
+      map(transactionCreated),
       chain(repository.persist),
       foldToCreated(res)
     )();

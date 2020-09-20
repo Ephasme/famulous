@@ -5,8 +5,8 @@ import * as O from "fp-ts/lib/Option";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "./FpUtils";
 import { Persist } from "../domain/Persist";
-import { AccountModel, AnyEvent, UserModel } from "../domain";
-import { Repository, InternalError, Logger } from "../domain/interfaces";
+import { AccountModel, AnyEvent, Ledger, UserModel } from "../domain";
+import { Repository, Logger } from "../domain/interfaces";
 import {
   Connection,
   EntityManager,
@@ -17,15 +17,9 @@ import {
 } from "typeorm";
 import { User } from "./entities/User";
 import { Account } from "./entities/Account";
-import { Transaction } from "./entities/Transaction";
 import { AsyncResult } from "../domain/interfaces/AsyncResult";
-
-export type UserFindParameters = Partial<{
-  id: string;
-  email: string;
-}>;
-
-export type FindParameters = UserFindParameters;
+import { Transaction } from "./entities/Transaction";
+import { ACCOUNTS, TRANSACTIONS, USERS } from "./entities/AccountSQL";
 
 export type Dependencies = {
   cnx: Connection;
@@ -84,31 +78,55 @@ export class RepositoryPostgres implements Repository {
     createdAt: dao.createdAt,
   });
 
-  accountDaoToModel: (dao: Account) => AccountModel = (a) => ({
-    balance: a.balance,
-    currency: a.currency,
-    id: a.id,
-    name: a.name,
-    state: a.state,
-    createdAt: a.createdAt,
+  accountDaoToModel: (dao: Account) => AccountModel = (dao) => ({
+    balance: dao.balance,
+    currency: dao.currency,
+    id: dao.id,
+    name: dao.name,
+    state: dao.state,
+    createdAt: dao.createdAt,
+    transactions: pipe(
+      dao.transactions || [],
+      A.reduce<Transaction, Ledger>({}, (ledger, entry) => ({
+        ...ledger,
+        [entry.id]: {
+          amount: entry.amount,
+          createdAt: entry.createdAt,
+          description: entry.description,
+          payee: entry.payee,
+        },
+      }))
+    ),
   });
 
   findAllUsers = (): AsyncResult<UserModel[]> =>
     pipe(this.findAll(User), TE.map(A.map(this.userDaoToModel)));
 
-  findAccountById = this.findOneById(Account);
+  findAccountById = flow(
+    this.findOneById(Account, {
+      relations: [TRANSACTIONS],
+    }),
+    TE.map(O.map(this.accountDaoToModel))
+  );
 
-  findAllAccounts = (userId: string): AsyncResult<AccountModel[]> =>
+  findAllAccounts = (
+    userId: string,
+    { withTransactions }: { withTransactions: boolean } = {
+      withTransactions: false,
+    }
+  ): AsyncResult<AccountModel[]> =>
     pipe(
-      tryCatch(() =>
-        this.em
+      tryCatch(() => {
+        const query = this.em
           .getRepository(Account)
-          .createQueryBuilder("account")
-          .leftJoinAndSelect("account.owners", "owner")
-          .where("owner.id = :userId", { userId })
-          .printSql()
-          .getMany()
-      ),
+          .createQueryBuilder()
+          .leftJoin(`${ACCOUNTS}.${USERS}`, "u")
+          .where("u.id = :userId", { userId });
+        if (withTransactions) {
+          query.leftJoinAndSelect(`${ACCOUNTS}.${TRANSACTIONS}`, "t");
+        }
+        return query.getMany();
+      }),
       TE.map(A.map<Account, AccountModel>(this.accountDaoToModel))
     );
 }

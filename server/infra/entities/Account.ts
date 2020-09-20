@@ -8,8 +8,8 @@ import {
 } from "typeorm";
 import { AccountStates, ACCOUNT_STATES } from "../../domain";
 import { Timestamps } from "../../domain/Timestamps";
+import { ACCOUNTS, BALANCE, TRANSACTIONS, USERS } from "./AccountSQL";
 import { Transaction } from "./Transaction";
-// import { Transaction } from "./Transaction";
 import { User } from "./User";
 
 export type CreateAccountParams = {
@@ -20,7 +20,7 @@ export type CreateAccountParams = {
   currency: string;
 };
 
-@Entity()
+@Entity({ name: ACCOUNTS })
 export class Account implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
@@ -28,7 +28,7 @@ export class Account implements Timestamps {
   static create(params: CreateAccountParams): Account {
     const account = new Account();
     account.id = params.id;
-    account.owners = params.owners.map(({ id }) => {
+    account.users = params.owners.map(({ id }) => {
       const u = new User();
       u.id = id;
       return u;
@@ -41,8 +41,11 @@ export class Account implements Timestamps {
     return account;
   }
 
+  @OneToMany(() => Transaction, (transaction) => transaction.account)
+  [TRANSACTIONS]?: Transaction[];
+
   @ManyToMany(() => User, (user) => user.accounts)
-  owners!: User[];
+  [USERS]?: User[];
 
   @Column({ enum: ACCOUNT_STATES })
   state!: AccountStates;
@@ -51,7 +54,7 @@ export class Account implements Timestamps {
   name!: string;
 
   @Column()
-  balance!: number;
+  [BALANCE]!: number;
 
   @Column()
   createdAt!: Date;

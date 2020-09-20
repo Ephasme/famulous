@@ -11,14 +11,11 @@ import { AbstractTransactionEvent } from "./TransactionEvent";
 export const TRANSACTION_CREATED = "transaction.created";
 export type TransactionCreatedType = typeof TRANSACTION_CREATED;
 
-interface AccountTarget {
-  readonly accountId: string;
-  readonly amount: number;
-}
-
 interface Payload {
   readonly accountId: string;
-  readonly targets: AccountTarget[];
+  readonly amount: number;
+  readonly payee?: string;
+  readonly description?: string;
 }
 
 export interface TransactionCreated
@@ -28,17 +25,25 @@ export interface TransactionCreated
 class TransactionCreatedImpl
   extends AbstractTransactionEvent<TransactionCreatedType>
   implements TransactionCreated {
-  static make(
-    id: string,
-    accountId: string,
-    targets: AccountTarget[]
-  ): TransactionCreated {
+  static make({
+    id,
+    accountId,
+    amount,
+    description,
+    payee,
+  }: {
+    id: string;
+    accountId: string;
+    amount: number;
+    description?: string;
+    payee?: string;
+  }): TransactionCreated {
     return new TransactionCreatedImpl(
       uuid.v4(),
       TRANSACTION_CREATED,
       { id, type: TRANSACTION },
       new Date(),
-      { accountId, targets }
+      { accountId, amount, description, payee }
     );
   }
 

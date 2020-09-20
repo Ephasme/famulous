@@ -64,7 +64,7 @@ export const validateCreateAccountCommand = (
         TE.chain(
           O.fold(
             () => TE.right(command),
-            (_) => TE.left(Forbidden(`Account ${command.id} not exists`))
+            () => TE.left(Forbidden(`Account ${command.id} not exists`))
           )
         )
       )

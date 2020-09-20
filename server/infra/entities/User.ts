@@ -4,11 +4,11 @@ import {
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
 } from "typeorm";
 import { UserStates, USER_STATES } from "../../domain";
 import { Timestamps } from "../../domain/Timestamps";
 import { Account } from "./Account";
+import { ACCOUNTS } from "./UserSQL";
 
 export interface CreateUserParams {
   id: string;
@@ -24,11 +24,11 @@ export class User implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToMany(() => Account, (account) => account.owners)
+  @ManyToMany(() => Account, (account) => account.users)
   @JoinTable()
-  accounts!: Account[];
+  [ACCOUNTS]?: Account[];
 
-  static create(params: CreateUserParams) {
+  static create(params: CreateUserParams): User {
     const dao = new User();
     dao.accounts = [];
     dao.email = params.email;
