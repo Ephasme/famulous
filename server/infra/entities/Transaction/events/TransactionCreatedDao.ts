@@ -1,11 +1,11 @@
 import { Column, Entity } from "typeorm";
-import { BaseEvent } from "./BaseEvent";
-import * as domain from "../../../domain/transaction/events/TransactionCreated";
+import { TransactionCreated } from "../../../../domain";
+import { BaseEventDao } from "../../BaseEventDao";
 
-@Entity()
-export class TransactionCreated extends BaseEvent {
-  static from(event: domain.TransactionCreated): TransactionCreated {
-    const dao = new TransactionCreated();
+@Entity({ name: "event_transaction_created" })
+export class TransactionCreatedDao extends BaseEventDao {
+  static from(event: TransactionCreated): TransactionCreatedDao {
+    const dao = new TransactionCreatedDao();
     this.mapEventToDao(event, dao);
     dao.accountId = event.payload.accountId.value;
     dao.amount = event.payload.amount;

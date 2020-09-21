@@ -5,10 +5,15 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { UserId, UserStates, USER_STATES } from "../../domain";
-import { Timestamps } from "../../domain/Timestamps";
-import { Account } from "./Account";
-import { ACCOUNTS } from "./UserSQL";
+import { UserId, UserStates, USER_STATES } from "../../../domain";
+import { Timestamps } from "../../../domain/Timestamps";
+import { AccountDao } from "../Account";
+
+export * from "./events/UserCreatedDao";
+export * from "./events/UserDeletedDao";
+
+export const ACCOUNTS = "accounts";
+export const USERS_TABLE = "users";
 
 export interface CreateUserParams {
   id: UserId;
@@ -19,17 +24,17 @@ export interface CreateUserParams {
   createdAt: Date;
 }
 
-@Entity()
-export class User implements Timestamps {
+@Entity({ name: USERS_TABLE })
+export class UserDao implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToMany(() => Account, (account) => account.users)
+  @ManyToMany(() => AccountDao, (account) => account.users)
   @JoinTable()
-  [ACCOUNTS]?: Account[];
+  [ACCOUNTS]?: AccountDao[];
 
-  static create(params: CreateUserParams): User {
-    const dao = new User();
+  static create(params: CreateUserParams): UserDao {
+    const dao = new UserDao();
     dao.accounts = [];
     dao.email = params.email;
     dao.id = params.id.value;

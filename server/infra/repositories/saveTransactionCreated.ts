@@ -1,21 +1,20 @@
 import { pipe, constVoid } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "../FpUtils";
-import { TransactionCreated, TransactionId } from "../../domain";
+import { TransactionCreated } from "../../domain";
 import { AsyncResult } from "../../domain/interfaces";
-import * as dao from "../entities/events/TransactionCreated";
 import { PersistDependencies } from "./persist";
-import { Transaction } from "../entities/Transaction";
-import { Account } from "../entities/Account";
-import { BALANCE } from "../entities/AccountSQL";
+import { TransactionCreatedDao, TransactionDao } from "../entities/Transaction";
+import { AccountDao } from "../entities/Account";
+import { BALANCE } from "../entities/Account";
 
 export const saveTransactionCreated = ({ em }: PersistDependencies) => (
   event: TransactionCreated
 ): AsyncResult<void> =>
   pipe(
-    tryCatch(() => em.save(dao.TransactionCreated.from(event))),
+    tryCatch(() => em.save(TransactionCreatedDao.from(event))),
     TE.map(() =>
-      Transaction.create({
+      TransactionDao.create({
         id: event.aggregate.id,
         createdAt: event.createdAt,
         amount: event.payload.amount,
@@ -24,13 +23,13 @@ export const saveTransactionCreated = ({ em }: PersistDependencies) => (
       })
     ),
     TE.chain((transaction) =>
-      tryCatch(() => em.save(Transaction, transaction))
+      tryCatch(() => em.save(TransactionDao, transaction))
     ),
     TE.chain((transaction) =>
       tryCatch(() => {
         return em
           .createQueryBuilder()
-          .update(Account)
+          .update(AccountDao)
           .set({ balance: () => `${BALANCE} + :delta` })
           .where({ id: transaction.account.id })
           .setParameters({ delta: transaction.amount })

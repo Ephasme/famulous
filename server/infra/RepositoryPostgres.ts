@@ -22,11 +22,10 @@ import {
   FindOneOptions,
   ObjectType,
 } from "typeorm";
-import { User } from "./entities/User";
-import { Account } from "./entities/Account";
+import { UserDao } from "./entities/User";
+import { AccountDao, TRANSACTIONS } from "./entities/Account";
 import { AsyncResult } from "../domain/interfaces/AsyncResult";
-import { Transaction } from "./entities/Transaction";
-import { TRANSACTIONS } from "./entities/AccountSQL";
+import { TransactionDao } from "./entities/Transaction";
 
 export type Dependencies = {
   cnx: Connection;
@@ -70,13 +69,13 @@ export class RepositoryPostgres implements Repository {
 
   findUserByEmail = flow(
     (email: string) => ({ email }),
-    this.findOneByCriteria(User)
+    this.findOneByCriteria(UserDao)
   );
 
-  findUserById = this.findOneById(User);
-  findTransactionById = this.findOneById(Transaction);
+  findUserById = this.findOneById(UserDao);
+  findTransactionById = this.findOneById(TransactionDao);
 
-  userDaoToModel: (dao: User) => UserModel = (dao) => ({
+  userDaoToModel: (dao: UserDao) => UserModel = (dao) => ({
     email: dao.email,
     id: dao.id,
     state: dao.state,
@@ -85,7 +84,7 @@ export class RepositoryPostgres implements Repository {
     createdAt: dao.createdAt,
   });
 
-  accountDaoToModel: (dao: Account) => AccountModel = (dao) => ({
+  accountDaoToModel: (dao: AccountDao) => AccountModel = (dao) => ({
     balance: dao.balance,
     currency: dao.currency,
     id: AccountId(dao.id),
@@ -94,7 +93,7 @@ export class RepositoryPostgres implements Repository {
     createdAt: dao.createdAt,
     transactions: pipe(
       dao.transactions || [],
-      A.reduce<Transaction, Ledger>({}, (ledger, entry) => ({
+      A.reduce<TransactionDao, Ledger>({}, (ledger, entry) => ({
         ...ledger,
         [entry.id]: {
           amount: entry.amount,
@@ -106,10 +105,10 @@ export class RepositoryPostgres implements Repository {
   });
 
   findAllUsers = (): AsyncResult<UserModel[]> =>
-    pipe(this.findAll(User), TE.map(A.map(this.userDaoToModel)));
+    pipe(this.findAll(UserDao), TE.map(A.map(this.userDaoToModel)));
 
   findAccountById = flow(
-    this.findOneById(Account, {
+    this.findOneById(AccountDao, {
       relations: [TRANSACTIONS],
     }),
     TE.map(O.map(this.accountDaoToModel))
@@ -124,7 +123,7 @@ export class RepositoryPostgres implements Repository {
     pipe(
       tryCatch(() => {
         const query = this.em
-          .getRepository(Account)
+          .getRepository(AccountDao)
           .createQueryBuilder("account")
           .leftJoin(`account.users`, "u")
           .where("u.id = :userId", { userId });
@@ -133,6 +132,6 @@ export class RepositoryPostgres implements Repository {
         }
         return query.getMany();
       }),
-      TE.map(A.map<Account, AccountModel>(this.accountDaoToModel))
+      TE.map(A.map<AccountDao, AccountModel>(this.accountDaoToModel))
     );
 }

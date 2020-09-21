@@ -7,14 +7,16 @@ import {
   TreeChildren,
   TreeParent,
 } from "typeorm";
-import { Allocation } from "./Allocation";
-import { ALLOCATIONS, ENVELOPPES_TABLE } from "./EnveloppeSQL";
+import { AllocationDao } from "../Allocation";
+
+export const ALLOCATIONS = "allocations";
+export const ENVELOPPES_TABLE = "enveloppes";
 
 export type CreateEnveloppeParams = {};
 
 @Entity({ name: ENVELOPPES_TABLE })
 @Tree("closure-table")
-export class Enveloppe {
+export class EnveloppeDao {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
@@ -24,17 +26,17 @@ export class Enveloppe {
   @Column()
   balance!: number;
 
-  static create(): Enveloppe {
-    const env = new Enveloppe();
+  static create(): EnveloppeDao {
+    const env = new EnveloppeDao();
     return env;
   }
 
-  @OneToMany(() => Allocation, (a) => a.enveloppe)
-  [ALLOCATIONS]!: Allocation[];
+  @OneToMany(() => AllocationDao, (a) => a.enveloppe)
+  [ALLOCATIONS]!: AllocationDao[];
 
   @TreeChildren({ cascade: true })
-  children?: Enveloppe[];
+  children?: EnveloppeDao[];
 
   @TreeParent()
-  parent!: Enveloppe;
+  parent!: EnveloppeDao;
 }

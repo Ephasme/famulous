@@ -6,11 +6,23 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { AccountId, AccountStates, ACCOUNT_STATES, UserId } from "../../domain";
-import { Timestamps } from "../../domain/Timestamps";
-import { ACCOUNTS, BALANCE, TRANSACTIONS, USERS } from "./AccountSQL";
-import { Transaction } from "./Transaction";
-import { User } from "./User";
+import {
+  AccountId,
+  AccountStates,
+  ACCOUNT_STATES,
+  UserId,
+} from "../../../domain";
+import { Timestamps } from "../../../domain/Timestamps";
+import { TransactionDao } from "../Transaction";
+import { UserDao } from "../User";
+
+export * from "./events/AccountCreatedDao";
+export * from "./events/AccountDeletedDao";
+
+export const USERS = "users";
+export const TRANSACTIONS = "transactions";
+export const BALANCE = "balance";
+export const ACCOUNTS_TABLE = "accounts";
 
 export type CreateAccountParams = {
   id: AccountId;
@@ -20,16 +32,16 @@ export type CreateAccountParams = {
   currency: string;
 };
 
-@Entity({ name: ACCOUNTS })
-export class Account implements Timestamps {
+@Entity({ name: ACCOUNTS_TABLE })
+export class AccountDao implements Timestamps {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  static create(params: CreateAccountParams): Account {
-    const account = new Account();
+  static create(params: CreateAccountParams): AccountDao {
+    const account = new AccountDao();
     account.id = params.id.value;
     account.users = params.owners.map(({ id }) => {
-      const u = new User();
+      const u = new UserDao();
       u.id = id.value;
       return u;
     });
@@ -41,11 +53,11 @@ export class Account implements Timestamps {
     return account;
   }
 
-  @OneToMany(() => Transaction, (transaction) => transaction.account)
-  [TRANSACTIONS]?: Transaction[];
+  @OneToMany(() => TransactionDao, (transaction) => transaction.account)
+  [TRANSACTIONS]?: TransactionDao[];
 
-  @ManyToMany(() => User, (user) => user.accounts)
-  [USERS]?: User[];
+  @ManyToMany(() => UserDao, (user) => user.accounts)
+  [USERS]?: UserDao[];
 
   @Column({ enum: ACCOUNT_STATES })
   state!: AccountStates;

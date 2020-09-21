@@ -14,8 +14,8 @@ import {
 import { createConnection } from "typeorm";
 import * as TE from "fp-ts/TaskEither";
 import * as O from "fp-ts/Option";
-import { Enveloppe } from "../infra/entities/Enveloppe";
-import { Allocation } from "../infra/entities/Allocation";
+import { AllocationDao } from "../infra/entities/Allocation";
+import { EnveloppeDao } from "../infra/entities/Enveloppe";
 
 Promise.resolve().then(async () => {
   const logger = new ConsoleLogger();
@@ -66,14 +66,14 @@ Promise.resolve().then(async () => {
   }
 
   const envid1 = EnveloppeId();
-  const enveloppe1 = new Enveloppe();
+  const enveloppe1 = new EnveloppeDao();
   enveloppe1.id = envid1.value;
   enveloppe1.balance = 0;
   enveloppe1.name = "bla";
   await em.save(enveloppe1);
 
   const alloc1Id = AllocationId();
-  const alloc1 = Allocation.from({
+  const alloc1 = AllocationDao.from({
     amount: 12,
     createdAt: new Date(),
     enveloppeId: envid1,
@@ -86,7 +86,7 @@ Promise.resolve().then(async () => {
   await em.save(alloc1);
 
   const x = await em
-    .getRepository(Enveloppe)
+    .getRepository(EnveloppeDao)
     .createQueryBuilder("env")
     .leftJoinAndSelect("env.allocations", "alloc")
     .leftJoinAndSelect("alloc.transaction", "trans")

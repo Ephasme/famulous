@@ -5,10 +5,13 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Transaction } from "./Transaction";
-import { Enveloppe } from "./Enveloppe";
-import { ALLOCATIONS_TABLE, ENVELOPPE, TRANSACTION } from "./AllocationSQL";
-import { AllocationId, EnveloppeId, TransactionId } from "../../domain";
+import { AllocationId, EnveloppeId, TransactionId } from "../../../domain";
+import { EnveloppeDao } from "../Enveloppe";
+import { TransactionDao } from "../Transaction";
+
+export const ALLOCATIONS_TABLE = "allocations";
+export const TRANSACTION = "transaction";
+export const ENVELOPPE = "enveloppe";
 
 export type CreateAllocationParams = {
   id: AllocationId;
@@ -21,14 +24,14 @@ export type CreateAllocationParams = {
 };
 
 @Entity({ name: ALLOCATIONS_TABLE })
-export class Allocation {
+export class AllocationDao {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  static from(params: CreateAllocationParams): Allocation {
-    const dao = new Allocation();
-    dao.enveloppe = { id: params.enveloppeId.value } as Enveloppe;
-    dao.transaction = { id: params.transactionId.value } as Transaction;
+  static from(params: CreateAllocationParams): AllocationDao {
+    const dao = new AllocationDao();
+    dao.enveloppe = { id: params.enveloppeId.value } as EnveloppeDao;
+    dao.transaction = { id: params.transactionId.value } as TransactionDao;
     dao.amount = params.amount;
     dao.createdAt = params.createdAt;
     dao.description = params.description;
@@ -37,13 +40,13 @@ export class Allocation {
     return dao;
   }
 
-  @ManyToOne(() => Transaction, (t) => t.allocations)
+  @ManyToOne(() => TransactionDao, (t) => t.allocations)
   @JoinColumn()
-  [TRANSACTION]!: Transaction;
+  [TRANSACTION]!: TransactionDao;
 
-  @ManyToOne(() => Enveloppe, (e) => e.allocations)
+  @ManyToOne(() => EnveloppeDao, (e) => e.allocations)
   @JoinColumn()
-  [ENVELOPPE]!: Enveloppe;
+  [ENVELOPPE]!: EnveloppeDao;
 
   @Column()
   amount!: number;

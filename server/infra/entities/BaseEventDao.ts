@@ -1,7 +1,7 @@
 import { Column, PrimaryGeneratedColumn } from "typeorm";
-import { AnyEvent } from "../../../domain";
+import { AnyEvent } from "../../domain";
 
-export abstract class BaseEvent {
+export abstract class BaseEventDao {
   @PrimaryGeneratedColumn("uuid")
   eventId!: string;
 
@@ -20,7 +20,7 @@ export abstract class BaseEvent {
   @Column()
   createdAt!: Date;
 
-  static mapEventToDao<T extends BaseEvent>(ev: AnyEvent, base: T): T {
+  static mapEventToDao<T extends BaseEventDao>(ev: AnyEvent, base: T): T {
     base.aggregateId = ev.aggregate.id.value;
     base.aggregateType = ev.aggregate.type;
     base.eventClass = ev.eventClass;

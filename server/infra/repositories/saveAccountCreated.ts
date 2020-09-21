@@ -2,10 +2,10 @@ import { AccountCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "../FpUtils";
-import { AsyncResult, InternalError, Logger } from "../../domain/interfaces";
-import * as dao from "../entities/events/AccountCreated";
-import { Account } from "../entities/Account";
+import { AsyncResult, Logger } from "../../domain/interfaces";
 import { EntityManager } from "typeorm";
+import { AccountDao } from "../entities/Account";
+import { AccountCreatedDao } from "../entities/Account/events/AccountCreatedDao";
 
 export const saveAccountCreated = ({
   em,
@@ -15,9 +15,9 @@ export const saveAccountCreated = ({
   logger: Logger;
 }) => (event: AccountCreated): AsyncResult<void> =>
   pipe(
-    tryCatch(() => em.save(dao.AccountCreated.from(event))),
+    tryCatch(() => em.save(AccountCreatedDao.from(event))),
     TE.map(() =>
-      Account.create({
+      AccountDao.create({
         ...event.payload,
         id: event.aggregate.id,
         owners: [{ id: event.payload.userId }],
