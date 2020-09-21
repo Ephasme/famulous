@@ -1,5 +1,6 @@
 import * as uuid from "uuid";
 import { UserEvent, With, AggregateInfo, USER, UserType } from "../..";
+import { UserId } from "../../ValueObjects";
 import { AbstractUserEvent } from "./UserEvent";
 
 export const USER_DELETED = "user.deleted";
@@ -10,7 +11,7 @@ export interface UserDeleted extends UserEvent<UserDeletedType>, With<void> {}
 class UserDeletedImpl
   extends AbstractUserEvent<UserDeletedType>
   implements UserDeleted {
-  static make(id: string): UserDeleted {
+  static make(id: UserId): UserDeleted {
     return new UserDeletedImpl(
       uuid.v4(),
       USER_DELETED,
@@ -22,7 +23,7 @@ class UserDeletedImpl
   private constructor(
     id: string,
     eventType: UserDeletedType,
-    aggregate: AggregateInfo<UserType>,
+    aggregate: AggregateInfo<UserType, UserId>,
     createdAt: Date,
     public readonly payload: void
   ) {

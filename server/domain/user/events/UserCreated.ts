@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { UserEvent, With, AggregateInfo, USER, UserType } from "../..";
+import { UserEvent, With, AggregateInfo, USER, UserType, UserId } from "../..";
 import { AbstractUserEvent } from "./UserEvent";
 
 export const USER_CREATED = "user.created";
@@ -19,7 +19,7 @@ class UserCreatedImpl
   extends AbstractUserEvent<UserCreatedType>
   implements UserCreated {
   static make(
-    id: string,
+    id: UserId,
     email: string,
     password: string,
     salt: string
@@ -36,7 +36,7 @@ class UserCreatedImpl
   private constructor(
     id: string,
     eventType: UserCreatedType,
-    aggregate: AggregateInfo<UserType>,
+    aggregate: AggregateInfo<UserType, UserId>,
     createdAt: Date,
     public readonly payload: Payload
   ) {

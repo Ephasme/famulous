@@ -21,7 +21,7 @@ export abstract class BaseEvent {
   createdAt!: Date;
 
   static mapEventToDao<T extends BaseEvent>(ev: AnyEvent, base: T): T {
-    base.aggregateId = ev.aggregate.id;
+    base.aggregateId = ev.aggregate.id.value;
     base.aggregateType = ev.aggregate.type;
     base.eventClass = ev.eventClass;
     base.eventType = ev.eventType;

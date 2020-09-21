@@ -1,7 +1,7 @@
 import * as D from "io-ts/lib/Decoder";
 import { flow } from "fp-ts/lib/function";
 import { mapLeft } from "fp-ts/lib/Either";
-import { date, uuid } from "../helpers/validators";
+import { uuid } from "../helpers/validators";
 import { UnprocessableEntity } from "../../domain/interfaces";
 import { pipe } from "fp-ts/lib/function";
 
@@ -20,8 +20,7 @@ const createTransactionCommandValidator = D.type({
   id: uuid,
   accountId: uuid,
   amount: positive,
-  description: D.string,
-  payee: D.string,
+  label: D.string,
 });
 
 export type CreateTransactionCommand = D.TypeOf<

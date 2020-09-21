@@ -1,5 +1,6 @@
 import * as uuid from "uuid";
 import { AccountEvent, AggregateInfo, With, ACCOUNT, AccountType } from "../..";
+import { AccountId, UserId } from "../../ValueObjects";
 import { AbstractAccountEvent } from "./AccountEvent";
 
 export const ACCOUNT_CREATED = "account.created";
@@ -7,7 +8,7 @@ export type AccountCreatedType = typeof ACCOUNT_CREATED;
 
 interface Payload {
   readonly name: string;
-  readonly userId: string;
+  readonly userId: UserId;
   readonly currency: string;
 }
 
@@ -19,9 +20,9 @@ class AccountCreatedImpl
   extends AbstractAccountEvent<AccountCreatedType>
   implements AccountCreated {
   static make(
-    id: string,
+    id: AccountId,
     name: string,
-    userId: string,
+    userId: UserId,
     currency: string
   ): AccountCreated {
     return new AccountCreatedImpl(
@@ -36,7 +37,7 @@ class AccountCreatedImpl
   private constructor(
     id: string,
     eventType: AccountCreatedType,
-    aggregate: AggregateInfo<AccountType>,
+    aggregate: AggregateInfo<AccountType, AccountId>,
     createdAt: Date,
     readonly payload: Payload
   ) {

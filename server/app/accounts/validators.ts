@@ -8,6 +8,8 @@ import {
   accountCreated,
   AccountDeleted,
   accountDeleted,
+  AccountId,
+  UserId,
 } from "../../domain";
 import { uuid } from "../helpers/validators";
 import {
@@ -19,12 +21,12 @@ import {
 } from "../../domain/interfaces";
 
 const deleteAccountCommandValidator = D.type({
-  id: uuid,
+  id: pipe(uuid, D.map(AccountId)),
 });
 
 const createAccountCommandValidator = D.type({
-  id: uuid,
-  userId: uuid,
+  id: pipe(uuid, D.map(AccountId)),
+  userId: pipe(uuid, D.map(UserId)),
   name: D.string,
   currency: D.string,
 });

@@ -9,7 +9,7 @@ import {
 import { map, chain } from "fp-ts/lib/TaskEither";
 import { foldToCreated, foldToUpdated } from "../responseFolders";
 import { Repository } from "../../domain/interfaces";
-import { UserModel } from "../../domain";
+import { UserId, UserModel } from "../../domain";
 
 export default (repository: Repository, auth: Authenticator): Router => {
   const router = Router();
@@ -38,7 +38,7 @@ export default (repository: Repository, auth: Authenticator): Router => {
       throw new Error("user not found");
     }
 
-    const e = await repository.findAllAccounts(user.id)();
+    const e = await repository.findAllAccounts(UserId(user.id))();
 
     if (e._tag === "Right") {
       res.json(e.right);

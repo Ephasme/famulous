@@ -1,7 +1,7 @@
 import { pipe, constVoid } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "../FpUtils";
-import { TransactionCreated } from "../../domain";
+import { TransactionCreated, TransactionId } from "../../domain";
 import { AsyncResult } from "../../domain/interfaces";
 import * as dao from "../entities/events/TransactionCreated";
 import { PersistDependencies } from "./persist";
@@ -20,8 +20,7 @@ export const saveTransactionCreated = ({ em }: PersistDependencies) => (
         createdAt: event.createdAt,
         amount: event.payload.amount,
         accountId: event.payload.accountId,
-        description: event.payload.description,
-        payee: event.payload.payee,
+        label: event.payload.label,
       })
     ),
     TE.chain((transaction) =>

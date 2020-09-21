@@ -5,21 +5,28 @@ import * as O from "fp-ts/lib/Option";
 import * as TE from "fp-ts/lib/TaskEither";
 import { tryCatch } from "./FpUtils";
 import { Persist } from "../domain/Persist";
-import { AccountModel, AnyEvent, Ledger, UserModel } from "../domain";
+import {
+  AccountId,
+  AccountModel,
+  AnyEvent,
+  AnyId,
+  Ledger,
+  UserId,
+  UserModel,
+} from "../domain";
 import { Repository, Logger } from "../domain/interfaces";
 import {
   Connection,
   EntityManager,
   FindConditions,
   FindOneOptions,
-  ObjectID,
   ObjectType,
 } from "typeorm";
 import { User } from "./entities/User";
 import { Account } from "./entities/Account";
 import { AsyncResult } from "../domain/interfaces/AsyncResult";
 import { Transaction } from "./entities/Transaction";
-import { ACCOUNTS, TRANSACTIONS, USERS } from "./entities/AccountSQL";
+import { TRANSACTIONS } from "./entities/AccountSQL";
 
 export type Dependencies = {
   cnx: Connection;
@@ -44,10 +51,10 @@ export class RepositoryPostgres implements Repository {
   findOneById = <Entity>(
     entityClass: ObjectType<Entity>,
     options?: FindOneOptions<Entity>
-  ) => (id: string | number | Date | ObjectID): AsyncResult<O.Option<Entity>> =>
+  ) => (id: AnyId): AsyncResult<O.Option<Entity>> =>
     pipe(
       tryCatch(() =>
-        this.em.findOne(entityClass, id, options).then(O.fromNullable)
+        this.em.findOne(entityClass, id.value, options).then(O.fromNullable)
       )
     );
 
@@ -81,7 +88,7 @@ export class RepositoryPostgres implements Repository {
   accountDaoToModel: (dao: Account) => AccountModel = (dao) => ({
     balance: dao.balance,
     currency: dao.currency,
-    id: dao.id,
+    id: AccountId(dao.id),
     name: dao.name,
     state: dao.state,
     createdAt: dao.createdAt,
@@ -92,8 +99,7 @@ export class RepositoryPostgres implements Repository {
         [entry.id]: {
           amount: entry.amount,
           createdAt: entry.createdAt,
-          description: entry.description,
-          payee: entry.payee,
+          label: entry.label,
         },
       }))
     ),
@@ -110,7 +116,7 @@ export class RepositoryPostgres implements Repository {
   );
 
   findAllAccounts = (
-    userId: string,
+    userId: UserId,
     { withTransactions }: { withTransactions: boolean } = {
       withTransactions: false,
     }
@@ -119,11 +125,11 @@ export class RepositoryPostgres implements Repository {
       tryCatch(() => {
         const query = this.em
           .getRepository(Account)
-          .createQueryBuilder()
-          .leftJoin(`${ACCOUNTS}.${USERS}`, "u")
+          .createQueryBuilder("account")
+          .leftJoin(`account.users`, "u")
           .where("u.id = :userId", { userId });
         if (withTransactions) {
-          query.leftJoinAndSelect(`${ACCOUNTS}.${TRANSACTIONS}`, "t");
+          query.leftJoinAndSelect(`account.${TRANSACTIONS}`, "t");
         }
         return query.getMany();
       }),

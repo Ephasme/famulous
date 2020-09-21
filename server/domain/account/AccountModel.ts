@@ -1,4 +1,5 @@
 import { Timestamps } from "../Timestamps";
+import { AccountId } from "../ValueObjects";
 
 export const ACCOUNT = "account";
 export type AccountType = typeof ACCOUNT;
@@ -9,13 +10,12 @@ export type AccountStates = typeof ACCOUNT_STATES[number];
 export type LedgerEntry = {
   amount: number;
   createdAt: Date;
-  description?: string;
-  payee?: string;
+  label?: string;
 };
 export type Ledger = Record<string, LedgerEntry>;
 
 export type AccountModel = {
-  id: string;
+  id: AccountId;
   state: AccountStates;
   name: string;
   balance: number;

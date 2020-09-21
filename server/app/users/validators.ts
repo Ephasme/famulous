@@ -9,10 +9,12 @@ import {
   Repository,
   UnprocessableEntity,
   Forbidden,
+  ErrorWithStatus,
 } from "../../domain/interfaces";
+import { UserId } from "../../domain";
 
 const createUserCommandValidator = D.type({
-  id: uuid,
+  id: pipe(uuid, D.map(UserId)),
   email: D.string,
   password: D.string,
 });
@@ -27,7 +29,7 @@ export const createUserSchema = Joi.object({
 
 export const validateCreateUserCommand = (repository: Repository) => (
   cmd: CreateUserCommand
-) => {
+): TE.TaskEither<ErrorWithStatus, CreateUserCommand> => {
   return pipe(
     cmd,
     createUserCommandValidator.decode,

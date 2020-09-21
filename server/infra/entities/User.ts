@@ -5,13 +5,13 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { UserStates, USER_STATES } from "../../domain";
+import { UserId, UserStates, USER_STATES } from "../../domain";
 import { Timestamps } from "../../domain/Timestamps";
 import { Account } from "./Account";
 import { ACCOUNTS } from "./UserSQL";
 
 export interface CreateUserParams {
-  id: string;
+  id: UserId;
   state: UserStates;
   email: string;
   password: string;
@@ -32,7 +32,7 @@ export class User implements Timestamps {
     const dao = new User();
     dao.accounts = [];
     dao.email = params.email;
-    dao.id = params.id;
+    dao.id = params.id.value;
     dao.password = params.password;
     dao.salt = params.salt;
     dao.createdAt = params.createdAt;

@@ -5,6 +5,7 @@ export * from "./WithT";
 export * from "./AnyEvent";
 export * from "./BaseEvent";
 export * from "./AggregateEvent";
+export * from "./ValueObjects";
 
 // USER
 export * from "./user/UserModel";

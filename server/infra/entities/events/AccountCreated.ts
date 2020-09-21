@@ -19,7 +19,7 @@ export class AccountCreated extends BaseEvent {
     this.mapEventToDao(event, dao);
     dao.currency = event.payload.currency;
     dao.name = event.payload.name;
-    dao.userId = event.payload.userId;
+    dao.userId = event.payload.userId.value;
     return dao;
   }
 }

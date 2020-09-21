@@ -3,29 +3,30 @@ import {
   Entity,
   JoinTable,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { AccountId, TransactionId } from "../../domain";
 import { Account } from "./Account";
-import { ACCOUNT } from "./TransactionSQL";
+import { Allocation } from "./Allocation";
+import { ACCOUNT, ALLOCATIONS, TRANSACTIONS_TABLE } from "./TransactionSQL";
 
 export type CreateTransactionParams = {
-  id: string;
-  accountId: string;
+  id: TransactionId;
+  accountId: AccountId;
   amount: number;
   createdAt: Date;
-  description?: string;
-  payee?: string;
+  label?: string;
 };
 
-@Entity()
+@Entity({ name: TRANSACTIONS_TABLE })
 export class Transaction {
   static create(params: CreateTransactionParams): Transaction {
     const dao = new Transaction();
     dao.amount = params.amount;
-    dao.account = { id: params.accountId } as Account;
-    dao.id = params.id;
-    dao.payee = params.payee;
-    dao.description = params.description;
+    dao.account = { id: params.accountId.value } as Account;
+    dao.id = params.id.value;
+    dao.label = params.label;
     dao.createdAt = params.createdAt;
     return dao;
   }
@@ -33,12 +34,12 @@ export class Transaction {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ nullable: true })
-  payee?: string;
-
   @ManyToOne(() => Account)
   @JoinTable()
   [ACCOUNT]!: Account;
+
+  @OneToMany(() => Allocation, (a) => a.transaction)
+  [ALLOCATIONS]?: Allocation[];
 
   @Column()
   amount!: number;
@@ -47,5 +48,5 @@ export class Transaction {
   createdAt!: Date;
 
   @Column({ nullable: true })
-  description?: string;
+  label?: string;
 }

@@ -6,15 +6,15 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { AccountStates, ACCOUNT_STATES } from "../../domain";
+import { AccountId, AccountStates, ACCOUNT_STATES, UserId } from "../../domain";
 import { Timestamps } from "../../domain/Timestamps";
 import { ACCOUNTS, BALANCE, TRANSACTIONS, USERS } from "./AccountSQL";
 import { Transaction } from "./Transaction";
 import { User } from "./User";
 
 export type CreateAccountParams = {
-  id: string;
-  owners: NonEmptyArray<{ id: string }>;
+  id: AccountId;
+  owners: NonEmptyArray<{ id: UserId }>;
   name: string;
   createdAt: Date;
   currency: string;
@@ -27,10 +27,10 @@ export class Account implements Timestamps {
 
   static create(params: CreateAccountParams): Account {
     const account = new Account();
-    account.id = params.id;
+    account.id = params.id.value;
     account.users = params.owners.map(({ id }) => {
       const u = new User();
-      u.id = id;
+      u.id = id.value;
       return u;
     });
     account.createdAt = params.createdAt;
