@@ -1,4 +1,3 @@
-import { KnexPersistAny, Dependencies } from "../RepositoryPostgres";
 import {
   USER_CREATED,
   ACCOUNT_CREATED,
@@ -17,56 +16,45 @@ import {
 import * as A from "fp-ts/lib/Array";
 import { pipe, constVoid } from "fp-ts/lib/function";
 import { saveAccountCreated } from "./saveAccountCreated";
-import { tryCatchNormalize } from "../FpUtils";
+import { tryCatch } from "../FpUtils";
 import { saveAccountDeleted } from "./saveAccountDeleted";
-import { Persist } from "../../domain/Persist";
 import { saveTransactionCreated } from "./saveTransactionCreated";
-import { saveTransactionModel } from "./saveTransactionModel";
-import { saveUserModel } from "./saveUserModel";
-import { saveAccountModel } from "./saveAccountModel";
-import { InternalError } from "../../domain/interfaces";
+import { AsyncResult, InternalError, Logger } from "../../domain/interfaces";
+import { EntityManager } from "typeorm";
 
-const _persist: KnexPersistAny = (deps) => (entity) => {
-  switch (entity.type) {
+export type PersistDependencies = { em: EntityManager; logger: Logger };
+
+const _persist = (deps: PersistDependencies) => (
+  entity: AnyEvent
+): AsyncResult<void> => {
+  switch (entity.eventType) {
     case ACCOUNT_CREATED:
-      return pipe(
-        saveAccountCreated(deps)(entity),
-        chain(() => saveAccountModel(deps)(entity))
-      );
+      return saveAccountCreated(deps)(entity);
     case USER_CREATED:
-      return pipe(
-        saveUserCreated(deps)(entity),
-        chain(() => saveUserModel(deps)(entity))
-      );
+      return saveUserCreated(deps)(entity);
     case ACCOUNT_DELETED:
-      return pipe(
-        saveAccountDeleted(deps)(entity),
-        chain(() => saveAccountModel(deps)(entity))
-      );
+      return saveAccountDeleted(deps)(entity);
     case TRANSACTION_CREATED:
-      return pipe(
-        saveTransactionCreated(deps)(entity),
-        chain(() => saveTransactionModel(deps)(entity))
-      );
+      return saveTransactionCreated(deps)(entity);
     default:
       throw new Error("Unhandled event");
   }
 };
 
-export const persist: (deps: Dependencies) => Persist<AnyEvent> = (deps) => (
-  ...entities
-) =>
+export default (deps: PersistDependencies) => (
+  ...entities: AnyEvent[]
+): AsyncResult<void> =>
   pipe(
-    tryCatchNormalize(() =>
+    tryCatch(() =>
       // This returns a Promise that we need to catch and normalize.
       // Errors that arise here are problems while opening transaction.
       // Errors in 'persist' are turned into either.
-      deps.knex.transaction((
+      deps.em.transaction((
         trx // Conveniently, a transaction implements Knex.
       ) =>
         pipe(
           entities,
-          A.map(_persist({ ...deps, knex: trx })),
+          A.map(_persist({ ...deps, em: trx })),
           A.sequence(taskEither)
         )()
       )
@@ -74,8 +62,8 @@ export const persist: (deps: Dependencies) => Persist<AnyEvent> = (deps) => (
     // This gives back a Either<Error, Either<E, A>>.
     // We need to change the error into error with status.
     mapLeft((e) => {
-      deps.logger.error(`error while opening transaction ${e.message}`);
-      return InternalError(e);
+      deps.logger.error(`error while opening transaction ${e.error.message}`);
+      return e;
     }),
     // Changes the either into taskEither and flatten.
     chain(fromEither),

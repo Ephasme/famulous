@@ -8,6 +8,8 @@ import {
   accountCreated,
   AccountDeleted,
   accountDeleted,
+  AccountId,
+  UserId,
 } from "../../domain";
 import { uuid } from "../helpers/validators";
 import {
@@ -15,15 +17,16 @@ import {
   UnprocessableEntity,
   Forbidden,
   NotFound,
+  AsyncResult,
 } from "../../domain/interfaces";
 
 const deleteAccountCommandValidator = D.type({
-  id: uuid,
+  id: pipe(uuid, D.map(AccountId)),
 });
 
 const createAccountCommandValidator = D.type({
-  id: uuid,
-  user_id: uuid,
+  id: pipe(uuid, D.map(AccountId)),
+  userId: pipe(uuid, D.map(UserId)),
   name: D.string,
   currency: D.string,
 });
@@ -40,7 +43,7 @@ export const Commands = {
     return accountCreated(
       command.id,
       command.name,
-      command.user_id,
+      command.userId,
       command.currency
     );
   },
@@ -50,7 +53,9 @@ export type DeleteAccountCommand = D.TypeOf<
   typeof deleteAccountCommandValidator
 >;
 
-export const validateCreateAccountCommand = (repository: Repository) =>
+export const validateCreateAccountCommand = (
+  repository: Repository
+): ((i: unknown) => AsyncResult<CreateAccountCommand>) =>
   flow(
     createAccountCommandValidator.decode,
     E.mapLeft(flow(D.draw, UnprocessableEntity)),
@@ -61,14 +66,16 @@ export const validateCreateAccountCommand = (repository: Repository) =>
         TE.chain(
           O.fold(
             () => TE.right(command),
-            (_) => TE.left(Forbidden(`Account ${command.id} not exists`))
+            () => TE.left(Forbidden(`Account ${command.id} not exists`))
           )
         )
       )
     )
   );
 
-export const validateDeleteAccountCommand = (repository: Repository) =>
+export const validateDeleteAccountCommand = (
+  repository: Repository
+): ((i: unknown) => AsyncResult<DeleteAccountCommand>) =>
   flow(
     deleteAccountCommandValidator.decode,
     E.mapLeft(flow(D.draw, UnprocessableEntity)),

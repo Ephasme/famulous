@@ -3,16 +3,24 @@ import { flow } from "fp-ts/lib/function";
 import { mapLeft } from "fp-ts/lib/Either";
 import { uuid } from "../helpers/validators";
 import { UnprocessableEntity } from "../../domain/interfaces";
+import { pipe } from "fp-ts/lib/function";
+
+interface PositiveBrand {
+  readonly Positive: unique symbol;
+}
+
+export type Positive = number & PositiveBrand;
+
+export const positive: D.Decoder<unknown, Positive> = pipe(
+  D.number,
+  D.refine((n): n is Positive => n > 0, "Positive")
+);
 
 const createTransactionCommandValidator = D.type({
   id: uuid,
-  account_id: uuid,
-  targets: D.array(
-    D.type({
-      account_id: D.string,
-      amount: D.number,
-    })
-  ),
+  accountId: uuid,
+  amount: positive,
+  label: D.string,
 });
 
 export type CreateTransactionCommand = D.TypeOf<

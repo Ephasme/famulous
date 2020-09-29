@@ -1,30 +1,24 @@
-import { KnexPersist } from "../RepositoryPostgres";
-import { UserCreatedModel } from "../entities/UserCreatedModel";
 import { UserCreated } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
-import { mapLeft, map } from "fp-ts/lib/TaskEither";
-import { tryCatchNormalize } from "../FpUtils";
-import { InternalError } from "../../domain/interfaces";
+import * as TE from "fp-ts/lib/TaskEither";
+import { tryCatch } from "../FpUtils";
+import { AsyncResult } from "../../domain/interfaces";
+import { UserCreatedDao, UserDao } from "../entities/User";
+import { PersistDependencies } from "./persist";
 
-export const saveUserCreated: KnexPersist<UserCreated> = ({ knex }) => (
-  entity
-) =>
+export const saveUserCreated = ({ em }: PersistDependencies) => (
+  event: UserCreated
+): AsyncResult<void> =>
   pipe(
-    tryCatchNormalize(
-      () =>
-        knex<UserCreatedModel>("user_events").insert({
-          id: entity.id,
-          type: entity.type,
-          aggregate_id: entity.aggregate.id,
-          aggregate_type: entity.aggregate.type,
-          created_email: entity.payload.email,
-          created_password: entity.payload.password,
-          created_salt: entity.payload.salt,
-        }) //TODO: console.log => Logger
-      // .then((x) =>
-      //   console.log("inserted account events: " + JSON.stringify(x))
-      // )
+    tryCatch(() => em.save(UserCreatedDao.from(event))),
+    TE.map(() =>
+      UserDao.create({
+        id: event.aggregate.id,
+        state: "created",
+        createdAt: event.createdAt,
+        ...event.payload,
+      })
     ),
-    mapLeft(InternalError),
-    map(constVoid)
+    TE.chain((dao) => tryCatch(() => em.save(dao))),
+    TE.map(constVoid)
   );

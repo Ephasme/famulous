@@ -1,23 +1,18 @@
-import { KnexPersist } from "../RepositoryPostgres";
-import { AccountDeletedModel } from "../entities/AccountDeletedModel";
 import { AccountDeleted } from "../../domain";
 import { pipe, constVoid } from "fp-ts/lib/function";
-import { tryCatchNormalize } from "../FpUtils";
-import { map, mapLeft } from "fp-ts/lib/TaskEither";
-import { InternalError } from "../../domain/interfaces";
+import { tryCatch } from "../FpUtils";
+import * as TE from "fp-ts/lib/TaskEither";
+import { ErrorWithStatus } from "../../domain/interfaces";
+import { PersistDependencies } from "./persist";
+import { AccountDao, AccountDeletedDao } from "../entities/Account";
 
-export const saveAccountDeleted: KnexPersist<AccountDeleted> = ({ knex }) => (
-  entity
-) =>
+export const saveAccountDeleted = ({ em }: PersistDependencies) => (
+  event: AccountDeleted
+): TE.TaskEither<ErrorWithStatus, void> =>
   pipe(
-    tryCatchNormalize(() =>
-      knex<AccountDeletedModel>("account_events").insert({
-        id: entity.id,
-        type: entity.type,
-        aggregate_id: entity.aggregate.id,
-        aggregate_type: entity.aggregate.type,
-      })
+    tryCatch(() => em.save(AccountDeletedDao.from(event))),
+    TE.chain(() =>
+      tryCatch(() => em.delete(AccountDao, { id: event.aggregate.id }))
     ),
-    mapLeft(InternalError),
-    map(constVoid)
+    TE.map(constVoid)
   );

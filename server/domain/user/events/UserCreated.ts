@@ -1,22 +1,25 @@
 import * as uuid from "uuid";
-import { UserEvent, With, AggregateInfo, USER, UserType } from "../..";
+import { UserEvent, With, AggregateInfo, USER, UserType, UserId } from "../..";
+import { AbstractUserEvent } from "./UserEvent";
 
 export const USER_CREATED = "user.created";
 export type UserCreatedType = typeof USER_CREATED;
 
 interface Payload {
-  email: string;
-  password: string;
-  salt: string;
+  readonly email: string;
+  readonly password: string;
+  readonly salt: string;
 }
 
 export interface UserCreated
   extends UserEvent<UserCreatedType>,
     With<Payload> {}
 
-class UserCreatedImpl implements UserCreated {
+class UserCreatedImpl
+  extends AbstractUserEvent<UserCreatedType>
+  implements UserCreated {
   static make(
-    id: string,
+    id: UserId,
     email: string,
     password: string,
     salt: string
@@ -25,18 +28,20 @@ class UserCreatedImpl implements UserCreated {
       uuid.v4(),
       USER_CREATED,
       { id, type: USER },
-      Date.now(),
+      new Date(),
       { email, password, salt }
     );
   }
 
   private constructor(
-    readonly id: string,
-    readonly type: UserCreatedType,
-    readonly aggregate: AggregateInfo<UserType>,
-    readonly createdAt: number,
-    readonly payload: Payload
-  ) {}
+    id: string,
+    eventType: UserCreatedType,
+    aggregate: AggregateInfo<UserType, UserId>,
+    createdAt: Date,
+    public readonly payload: Payload
+  ) {
+    super(id, eventType, aggregate, createdAt);
+  }
 }
 
 export const userCreated = UserCreatedImpl.make;

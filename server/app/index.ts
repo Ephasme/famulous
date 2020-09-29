@@ -1,9 +1,10 @@
+import "reflect-metadata";
+
 import * as express from "express";
 import * as path from "path";
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
 
-import setupDb from "../infra/db/db";
 import { RepositoryPostgres } from "../infra/RepositoryPostgres";
 import { ConsoleLogger } from "../infra/ConsoleLogger";
 import userRoutes from "./users/routes";
@@ -14,12 +15,13 @@ import makePassportMiddleware from "./security/passport";
 import { authenticatorFactory } from "./security/authenticate";
 import { buildCreateUserFlow } from "./users/buildCreateUserFlow";
 import { buildGetAllUsersFlow } from "./users/buildGetAllUsersFlow";
+import { createConnection } from "typeorm";
 
 const port = parseInt(process.env.PORT || "3001");
 
 const logger = new ConsoleLogger();
 
-setupDb(logger).then((db) => {
+Promise.resolve().then(async () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(
@@ -29,7 +31,19 @@ setupDb(logger).then((db) => {
   );
 
   // Fundamental service instanciations.
-  const repo = new RepositoryPostgres(db, logger);
+  console.log(process.env.TYPEORM_URL);
+  const cnx = await createConnection({
+    type: "postgres",
+    url: process.env.TYPEORM_URL,
+    migrations: ["server/infra/migrations/**/*.ts"],
+    entities: ["server/infra/entities/**/*.ts"],
+    dropSchema: true,
+    logging: true,
+    synchronize: true,
+  });
+
+  const em = cnx.createEntityManager();
+  const repo = new RepositoryPostgres(logger, cnx, em);
   const passport = makePassportMiddleware(app, repo, logger);
   const auth = authenticatorFactory(passport);
 
