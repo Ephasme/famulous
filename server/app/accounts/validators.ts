@@ -24,6 +24,10 @@ const deleteAccountCommandValidator = D.type({
   id: pipe(uuid, D.map(AccountId)),
 });
 
+const getAccountQueryValidator = D.type({
+  id: pipe(uuid, D.map(AccountId)),
+});
+
 const createAccountCommandValidator = D.type({
   id: pipe(uuid, D.map(AccountId)),
   userId: pipe(uuid, D.map(UserId)),
@@ -90,3 +94,9 @@ export const validateDeleteAccountCommand = (
       )
     )
   );
+
+export const validateGetAccountCommand = flow(
+  getAccountQueryValidator.decode,
+  E.mapLeft(flow(D.draw, UnprocessableEntity)),
+  TE.fromEither
+);

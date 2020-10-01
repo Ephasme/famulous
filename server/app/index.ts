@@ -31,14 +31,13 @@ Promise.resolve().then(async () => {
   );
 
   // Fundamental service instanciations.
-  console.log(process.env.TYPEORM_URL);
   const cnx = await createConnection({
     type: "postgres",
     url: process.env.TYPEORM_URL,
     migrations: ["server/infra/migrations/**/*.ts"],
     entities: ["server/infra/entities/**/*.ts"],
-    dropSchema: true,
-    logging: true,
+    dropSchema: false,
+    logging: false,
     synchronize: true,
   });
 

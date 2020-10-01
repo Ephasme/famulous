@@ -126,7 +126,7 @@ export class RepositoryPostgres implements Repository {
           .getRepository(AccountDao)
           .createQueryBuilder("account")
           .leftJoin(`account.users`, "u")
-          .where("u.id = :userId", { userId });
+          .where("u.id = :userId", { userId: userId.value });
         if (withTransactions) {
           query.leftJoinAndSelect(`account.${TRANSACTIONS}`, "t");
         }
