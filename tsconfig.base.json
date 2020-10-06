@@ -13,5 +13,5 @@
     "strict": true,
     "target": "es2017"
   },
-  "exclude": ["**/*.d.ts"]
+  "exclude": ["**/*.d.ts", "node_modules"]
 }
